@@ -244,6 +244,19 @@ class OctCfg(_Section):
     snr_db: float
 
 
+class UserCfg(_Section):
+    name: str
+    role: str
+    pin_hash: str
+
+
+class ComplianceCfg(_Section):
+    pin_iterations: int = Field(gt=0)
+    reason_codes: tuple[str, ...]
+    meanings: tuple[str, ...]
+    users: tuple[UserCfg, ...]
+
+
 class SegCfg(_Section):
     widths: tuple[int, ...]
     pretrain_epochs: int = Field(gt=0)
@@ -318,6 +331,7 @@ class Config(_Section):
     app: AppCfg
     dissolution: DissolutionCfg
     oct: OctCfg
+    compliance: ComplianceCfg
     seg: SegCfg
     solve: SolveCfg
     oct_dataset: OctDatasetCfg

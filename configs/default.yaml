@@ -186,6 +186,15 @@ oct:
   detect_snr_db: 12.0             # Implementation: apex search threshold above the noise floor
   snr_db: 35.0                    # Default surface SNR at normal incidence for a single scan
 
+compliance:
+  pin_iterations: 100000          # Implementation: PBKDF2-SHA256 rounds for PIN hashes
+  reason_codes: [target_reached, process_fault, quality_hold, maintenance, other]  # Assumption: example reason codes
+  meanings: [approve_stop, reject_recommendation, acknowledge_alarm, confirm_setpoint]  # Assumption: what a signature can mean
+  # Demonstration accounts only (PINs are in the README); a real system uses the site's identity provider.
+  users:
+    - {name: operator1, role: operator, pin_hash: 89e33f83e0f299b7a0e128cc3671704d5d1816b3a6797494a888937f2956e122}
+    - {name: qa1, role: quality, pin_hash: 325225f7daf3104b118ed2c11209495f20e4d785ce747c0f6d558cb6be78cb14}
+
 seg:
   widths: [16, 32, 64, 128, 256]  # Build guide: compact 4-level U-Net, about 2 M parameters
   pretrain_epochs: 60             # Build guide

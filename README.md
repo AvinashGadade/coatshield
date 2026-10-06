@@ -37,6 +37,14 @@ python scripts/run_validation.py           # full grid: 2,140 batches, hours; re
 
 Both write CSVs, figures and `validation_summary_<config hash>.md` to `reports/`.
 
+## Compliance demonstration
+
+`coatshield/compliance/` shows the design a GMP regulator expects, at demonstration level:
+a hash-chained audit trail (`AuditTrail.verify_chain()`), operator e-signatures, a model
+registry that refuses a file whose SHA-256 differs from `models/manifest.json`, and a batch
+record as JSON and PDF. The demo accounts are `operator1` (PIN 2468) and `qa1` (PIN 1357);
+they exist only so the sign-off flow can be shown.
+
 ## Layout
 
 | Path | What it holds |
@@ -47,6 +55,8 @@ Both write CSVs, figures and `validation_summary_<config hash>.md` to `reports/`
 | `coatshield/estimate/` | M6: raw, IPW, model-based and hybrid estimators, four stopping rules, diagnosis |
 | `coatshield/oct/` | M2: spectral-domain OCT simulator for coated pellets and its processing chain |
 | `coatshield/solve/` | M4: surface fit, refraction correction, three refractive-index methods |
+| `coatshield/seg/` | M3: compact U-Net, graph search, training and ONNX inference (models not trained yet) |
+| `coatshield/compliance/` | Audit trail, e-signature, model registry, batch record |
 | `coatshield/bundle.py` | Everything the dashboard shows for one scenario, as small files |
 | `app/` | Streamlit dashboard (story mode, Batch, Distributions, Controllers, Sensitivity) |
 | `scripts/` | Data downloads, check scripts, validation runs |
