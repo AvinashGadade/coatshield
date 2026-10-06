@@ -1,0 +1,1 @@
+"""CoatShield gate module."""

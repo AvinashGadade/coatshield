@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.cache/
+.streamlit/secrets.toml
+
+# Datasets stay out of git (licences: OCT5k research use, Duke never redistributed)
+data/raw/*
+!data/raw/.gitkeep
+data/synthetic/*
+!data/synthetic/.gitkeep
+data/test_locked/
+
+# Planning documents
+*.docx

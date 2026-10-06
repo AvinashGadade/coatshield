@@ -1,0 +1,1 @@
+"""CoatShield estimate module."""

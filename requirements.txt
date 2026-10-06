@@ -1,0 +1,28 @@
+# Full dev environment (torch included). Python 3.11.
+# CPU wheels for torch keep the install small; on Kaggle the GPU build is preinstalled.
+--extra-index-url https://download.pytorch.org/whl/cpu
+numpy
+scipy
+pandas
+pyarrow
+pydantic>=2
+pyyaml
+matplotlib
+plotly
+streamlit
+torch
+torchvision
+segmentation-models-pytorch
+opencv-python-headless
+scikit-image
+scikit-learn
+grad-cam
+onnx
+onnxruntime
+numba
+fpdf2
+pytest
+ruff
+tqdm
+requests
+libarchive-c

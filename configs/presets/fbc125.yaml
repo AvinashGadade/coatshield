@@ -1,0 +1,5 @@
+# Scale preset: production unit, 125 kg batch.
+batch:
+  mass_kg: 125.0          # FBC 125 class batch
+wurster:
+  cycle_time_s: 7.4       # Upper end of the published 3.0-7.4 s range (Jiang et al. 2020)

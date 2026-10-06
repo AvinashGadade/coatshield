@@ -1,0 +1,9 @@
+# Product preset: enteric coat (Eudragit L class) on 700 um cores. Values are example assumptions.
+pellet:
+  core_median_um: 700.0   # Core sizes used in Wolfgang et al. 2025
+coating:
+  n: 1.48                 # Eudragit 1.48 (Lin et al. 2017)
+batch:
+  target_mean_um: 16.0    # Example target; about 11% weight gain
+spec:
+  d10_min_um: 12.0        # Our example spec

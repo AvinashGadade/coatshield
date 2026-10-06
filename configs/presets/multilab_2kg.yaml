@@ -1,0 +1,5 @@
+# Scale preset: lab unit, 2 kg batch.
+batch:
+  mass_kg: 2.0            # MultiLab-class lab batch
+wurster:
+  cycle_time_s: 3.0       # Lower end of the published 3.0-7.4 s range (Jiang et al. 2020)

@@ -1,0 +1,22 @@
+[project]
+name = "coatshield"
+version = "0.1.0"
+description = "Software prototype for in-line pellet coating measurement on a Wurster fluid bed"
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+include = ["coatshield*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["data", "reports", "models", "notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "NPY"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+markers = ["slow: long-running checks (deselect with -m 'not slow')"]

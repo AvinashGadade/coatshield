@@ -1,0 +1,139 @@
+# CoatShield default configuration.
+# Every parameter lives here, each with a comment naming its source.
+# "Assumption" means the value is ours and is exposed in the dashboard or the limits page.
+# Units: micrometres for thickness and size, seconds for time, unless the key says otherwise.
+
+seed: 20261006                    # Master seed; date of the first simulation run
+
+pellet:
+  core_median_um: 700.0           # Core sizes used in Wolfgang et al. 2025 (preset 250)
+  size_sigma_log: 0.18            # Assumption; shown on a slider
+  core_density_g_cm3: 1.5         # MCC pellet envelope density, about 1.5 g/cm3 (build guide)
+
+coating:
+  n: 1.48                         # Eudragit 1.48; porous films lower (Lin et al. 2017); range 1.30-1.60
+  density_g_cm3: 1.2              # Polymer film density, about 1.2 g/cm3 (build guide)
+
+core:
+  n: 1.54                         # Microcrystalline cellulose (Juntunen et al. 2024)
+
+batch:
+  mass_kg: 30.0                   # GPCG 30 scale (preset gpcg30_30kg)
+  duration_h: 12.0                # Assumption: longest spray time simulated; controllers stop earlier
+  step_s: 60.0                    # Build guide default time step
+  n_pellets: 400000               # Build guide default (200,000 for the dashboard)
+  target_mean_um: 16.0            # Example target; 16 um on 700 um cores is about 11% weight gain
+  spray_efficiency: 0.95          # Build guide default
+  spray_solids_g_per_min: null    # null = derived from wurster.deposit_nm_per_pass and cycle_time_s
+
+wurster:
+  cycle_time_s: 5.8               # Lab Wurster CFD-DEM (Jiang et al. 2020); Chalmers thesis; range 3.0-7.4
+  cycle_time_rsd: 0.35            # Chalmers thesis; range 0.19-0.63. Applied as step-to-step spread
+  deposit_nm_per_pass: 3.0        # Derived: 16 um over 4,000-8,000 passes; range 2-4
+  cycle_size_exponent_b: 0.5      # Build guide default: big pellets cycle less often (tau ~ D^b)
+  size_growth_exponent_k: 1.0     # Net growth ~ D^k (k = a - b, a = 1.5). Gives large/small ratio about 1.6
+  growth_ratio_target: [1.08, 1.81]  # Chalmers thesis, large-to-small growth within one batch
+  fusion_rate_per_h: 0.002        # Assumption: fraction of single pellets fusing per hour
+  fines_per_min: 5.0              # Assumption: spray-dried fines entering the camera stream per minute
+  fines_size_um: [20.0, 100.0]    # Build guide: fines are 20-100 um objects
+
+twin:
+  rng_chunks: 16                  # Implementation: fixed number of random streams for the pass draw (not CPU-dependent)
+  pass_classes: 64                # Implementation: log-spaced pass-rate classes for the tabulated pass draw
+  pass_tail: 1.0e-10              # Implementation: upper-tail mass cut from each pass-count table
+  stats_subsample: 50000          # Implementation: pellets used for the size-trend fit in the truth summaries
+  thickness_hist_bins: 250        # Implementation: bins of the stored true-thickness histogram
+  thickness_hist_max_factor: 2.5  # Implementation: histogram upper edge as a multiple of batch.target_mean_um
+  size_hist_bins: 400             # Implementation: log-spaced bins of the stored true-size histogram
+  size_hist_range: [0.3, 3.0]     # Implementation: size histogram range as multiples of the core median
+
+window:
+  size_bias_m: 3.0                # Unmeasured; the key assumption (slider 0-4)
+  hidden_selection_gamma: 0.0     # Second honesty slider: selection the camera cannot see
+  objects_per_min: 500.0          # "Several hundred objects per minute", Wolfgang et al. 2025
+
+camera:
+  size_noise_um: 5.5              # One Eyecon2 pixel (InnoGlobal Eyecon2 specifications)
+
+spec:
+  d10_min_um: 12.0                # Our example spec
+
+measurement:
+  sigma_um: 1.0                   # Our target; 1D-OCT RMSE was 2.0 um (Wolfgang et al. 2020)
+  n_assumed: 1.48                 # Index the placeholder measurement assumes; equal to coating.n by default
+  undecided_base: 0.02            # Assumption: undecided share with a clean window
+  undecided_fouled: 0.60          # Assumption: undecided share with a fully fouled window
+  twin_misread_model: random      # random (x0.4-1.9), thin (x0.45) or thick (x1.4); build guide
+  twin_misread_random: [0.4, 1.9] # Build guide
+  twin_misread_thin: 0.45         # Build guide
+  twin_misread_thick: 1.4         # Build guide
+  error_model_path: null          # Phase 8: path to the fitted chain error model (JSON); null = placeholder
+
+gate:
+  twin_recall_target: 0.95        # Assumption used in the 6 Oct simulation
+
+fault:
+  scenario: none                  # none | substrate_shift | nozzle_block | over_wetting | spray_drying | maldistribution | window_fouling
+  start_h: 2.0                    # Assumption: default switch-on time for a fault
+  substrate_shift_um: 67.0        # Published case: core median +67 um caused about 3 um error (Pharm. Technology)
+  nozzle_block_factor: 0.7        # Build guide: sprayed volume -30%
+  over_wetting_fusion_factor: 10.0  # Build guide: fusion rate x10
+  over_wetting_growth_factor: 0.9   # Build guide: growth -10%
+  spray_drying_efficiency_factor: 0.7  # Build guide: efficiency x0.7
+  spray_drying_fines_factor: 10.0      # Build guide: fines x10
+  maldistribution_rsd: 0.6        # Build guide: cycle-time spread raised to 0.6
+  fouling_ramp_h: 4.0             # Assumption: hours for window fouling to ramp from 0 to 1
+
+estimator:
+  window_min: 5.0                 # Build guide: estimate from the last 5 minutes (about 2,500 objects)
+  growth_shift: true              # Build guide option: shift older samples forward by growth rate x age
+  n_size_bins: 30                 # Build guide: 30 log-spaced size classes
+  weight_trim_percentile: 99.0    # Build guide: trim IPW weights above the 99th percentile
+  reference: atline               # oracle | atline | coa (source of f_true)
+  atline_n: 10000                 # Build guide: 10,000-pellet at-line sizing of the bed
+  min_bin_count: 20               # Assumption: below this a size bin counts as sparse (hybrid pooling prior)
+  bootstrap_n: 200                # Build guide: 200 seeded resamples
+  interval: 0.90                  # Build guide: 90% interval for d10
+  method: hybrid                  # raw | ipw | model | hybrid (the CoatShield controller uses hybrid)
+  growth_window_min: 30.0         # Assumption: history used to estimate the growth rate for the age shift
+  deconvolve_noise: true          # Remove the known measurement noise (measurement.sigma_um) from the spread
+  quantile_tol_um: 0.001          # Implementation: bisection tolerance when solving the mixture CDF
+
+controller:
+  p_d10_min: 0.95                 # Build guide: stop when P(d10 >= spec) > 0.95
+  cv_target: 0.30                 # Assumption: maximum estimated batch CV at stop
+  undecided_limit: 0.20           # Assumption: maximum undecided rate at stop
+  min_objects: 500                # Assumption: fewest accepted objects in the window before any stop decision
+
+diagnosis:
+  window_min: 30.0                # Assumption: trailing window for growth rate and decay-exponent fits
+  growth_low_factor: 0.85         # Assumption: growth below 85% of the recipe rate counts as low
+  agglomerate_high_factor: 3.0    # Assumption: gate twin share above 3x its early-batch level counts as high
+  fines_high_factor: 3.0          # Assumption: fines rate above 3x its early-batch level counts as high
+  spread_high_factor: 1.25        # Assumption: size-adjusted spread above 1.25x the sqrt(1/t) expectation counts as high
+  undecided_high: 0.20            # Assumption: undecided share above 20% points to window fouling
+  size_shift_um: 30.0             # Assumption: median size this far above the certificate points to a substrate shift
+  baseline_h: 1.0                 # Assumption: the first hour sets the batch's own baseline rates
+
+validation:
+  n_pellets: 100000               # Build guide: validation grid runs at 100,000 pellets
+  m_grid: [0.0, 1.0, 2.0, 3.0, 4.0]    # Build guide
+  k_grid: [0.0, 0.5, 1.0, 1.5]         # Build guide
+  gamma_grid: [0.0, 0.5]               # Build guide
+  n_seeds: 50                     # Build guide: 50 seeds per grid cell
+  fault_seeds: 20                 # Build guide: 20 seeds per fault scenario
+  eval_from_h: 2.0                # Assumption: estimator error is scored from 2 h, once the coat is measurable
+  quick_n_seeds: 4                # Implementation: seeds per cell in --quick mode (about 5 minutes on a laptop)
+  quick_m_grid: [0.0, 3.0]        # Implementation: --quick grid
+  quick_k_grid: [0.0, 1.0]        # Implementation: --quick grid
+
+dissolution:
+  # Published pellet data: t63 about 30, 50, 70 min at 9.8, 13.2, 16.1 um (Pharmaceutics 16:1307)
+  thickness_um: [9.8, 13.2, 16.1]
+  t63_min: [30.0, 50.0, 70.0]
+
+oct:
+  center_nm: 830.0                # UHR-OCT class
+  fwhm_nm: 200.0                  # About 1.5 um axial resolution in air
+  lateral_spot_um: 18.0           # Gives about 600 um depth of focus
+  ascan_rate_hz: 250000.0         # Upper end of current commercial heads

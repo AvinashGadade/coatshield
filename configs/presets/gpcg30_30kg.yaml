@@ -1,0 +1,5 @@
+# Scale preset: pilot unit, 30 kg batch (the default scale).
+batch:
+  mass_kg: 30.0           # GPCG 30 class batch
+wurster:
+  cycle_time_s: 5.8       # Lab Wurster CFD-DEM (Jiang et al. 2020); Chalmers thesis

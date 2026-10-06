@@ -1,0 +1,14 @@
+# Deployed dashboard only. No torch, so the app fits Streamlit Cloud's memory.
+numpy
+scipy
+pandas
+pyarrow
+pydantic>=2
+pyyaml
+plotly
+streamlit
+opencv-python-headless
+scikit-image
+onnxruntime
+numba
+fpdf2
