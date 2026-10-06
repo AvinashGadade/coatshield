@@ -186,6 +186,30 @@ oct:
   detect_snr_db: 12.0             # Implementation: apex search threshold above the noise floor
   snr_db: 35.0                    # Default surface SNR at normal incidence for a single scan
 
+seg:
+  widths: [16, 32, 64, 128, 256]  # Build guide: compact 4-level U-Net, about 2 M parameters
+  pretrain_epochs: 60             # Build guide
+  finetune_epochs: 30             # Build guide
+  batch_size: 16                  # Assumption: fits a Kaggle T4 at these crop sizes
+  lr: 0.001                       # Build guide: AdamW, 1e-3 with cosine decay
+  finetune_lr: 0.0003             # Assumption: "a lower learning rate" for fine-tuning
+  encoder_lr_factor: 0.1          # Build guide: encoder at a tenth of the decoder's rate
+  weight_decay: 0.0001            # Assumption: AdamW default range
+  dice_weight: 1.0                # Assumption: cross-entropy + Dice, equal weight
+  oct5k_crop: [512, 256]          # Build guide: 512 x 256 crops (depth x lateral)
+  oct5k_val_volumes: 0.15         # Assumption: share of patient volumes held out for validation
+  oct5k_test_volumes: 0.15        # Assumption: share of patient volumes held out for the report
+  synthetic_crop: [448, 128]      # Assumption: random depth crop of the 512 x 128 pellet scans
+  aug_gain: [0.8, 1.25]           # Assumption: random gain
+  aug_gamma: [0.8, 1.25]          # Assumption: random gamma
+  aug_speckle: 0.08               # Assumption: std of added multiplicative speckle noise
+  aug_shift_px: 12                # Assumption: "small vertical shifts"
+  dp_max_jump_px: 3               # Build guide: at most 3 pixels of jump between columns
+  dp_min_gap_px: 1                # Build guide: inner surface at least one pixel below the outer
+  valid_min_prob: 0.5             # Assumption: a column is valid when coating or core is this probable somewhere
+  eval_min_snr_db: 25.0           # Build guide: boundary error target applies at SNR >= 25 dB
+  separable_min_px: 2.0           # Assumption: surfaces count as separated when found at least this far apart
+
 solve:
   max_angle_deg: 20.0             # Build guide: use only A-scans below this incidence angle
   apex_angle_deg: 2.0             # Assumption: reflectance is read within this angle of the apex, where fall-off is under 2%

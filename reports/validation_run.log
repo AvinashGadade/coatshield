@@ -10,3 +10,10 @@ config 1cf9e246611c: 2000 grid + 140 fault batches, 10 workers
   grid: 180/2000 batches, about 244.1 min left
   grid: 200/2000 batches, about 242.6 min left
   grid: 220/2000 batches, about 235.5 min left
+  grid: 240/2000 batches, about 225.7 min left
+  grid: 260/2000 batches, about 219.4 min left
+  grid: 280/2000 batches, about 218.2 min left
+  grid: 300/2000 batches, about 218.4 min left
+  grid: 320/2000 batches, about 214.1 min left
+  grid: 340/2000 batches, about 207.9 min left
+  grid: 360/2000 batches, about 202.6 min left

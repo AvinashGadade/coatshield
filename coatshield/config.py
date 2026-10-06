@@ -244,6 +244,31 @@ class OctCfg(_Section):
     snr_db: float
 
 
+class SegCfg(_Section):
+    widths: tuple[int, ...]
+    pretrain_epochs: int = Field(gt=0)
+    finetune_epochs: int = Field(gt=0)
+    batch_size: int = Field(gt=0)
+    lr: float = Field(gt=0)
+    finetune_lr: float = Field(gt=0)
+    encoder_lr_factor: float = Field(gt=0, le=1)
+    weight_decay: float = Field(ge=0)
+    dice_weight: float = Field(ge=0)
+    oct5k_crop: tuple[int, int]
+    oct5k_val_volumes: float = Field(gt=0, lt=1)
+    oct5k_test_volumes: float = Field(gt=0, lt=1)
+    synthetic_crop: tuple[int, int]
+    aug_gain: tuple[float, float]
+    aug_gamma: tuple[float, float]
+    aug_speckle: float = Field(ge=0)
+    aug_shift_px: int = Field(ge=0)
+    dp_max_jump_px: int = Field(ge=0)
+    dp_min_gap_px: int = Field(ge=1)
+    valid_min_prob: float = Field(gt=0, lt=1)
+    eval_min_snr_db: float
+    separable_min_px: float = Field(gt=0)
+
+
 class SolveCfg(_Section):
     max_angle_deg: float = Field(gt=0, lt=90)
     apex_angle_deg: float = Field(gt=0, lt=90)
@@ -293,6 +318,7 @@ class Config(_Section):
     app: AppCfg
     dissolution: DissolutionCfg
     oct: OctCfg
+    seg: SegCfg
     solve: SolveCfg
     oct_dataset: OctDatasetCfg
 

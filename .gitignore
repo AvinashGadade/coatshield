@@ -16,3 +16,4 @@ data/test_locked/
 # Planning documents
 *.docx
 reports/.progress/
+models/checkpoints/
