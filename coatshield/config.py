@@ -244,6 +244,17 @@ class OctCfg(_Section):
     snr_db: float
 
 
+class SolveCfg(_Section):
+    max_angle_deg: float = Field(gt=0, lt=90)
+    apex_angle_deg: float = Field(gt=0, lt=90)
+    assumed_n: float = Field(gt=1)
+    search_px: int = Field(ge=0)
+    core_branch: Literal["below", "above"]
+    anchor_pellets: int = Field(gt=0)
+    microscopy_sigma_um: float = Field(ge=0)
+    min_ascans: int = Field(gt=2)
+
+
 class OctDatasetCfg(_Section):
     n_train: int = Field(gt=0)
     n_val: int = Field(gt=0)
@@ -282,6 +293,7 @@ class Config(_Section):
     app: AppCfg
     dissolution: DissolutionCfg
     oct: OctCfg
+    solve: SolveCfg
     oct_dataset: OctDatasetCfg
 
     def to_dict(self) -> dict[str, Any]:

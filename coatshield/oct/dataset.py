@@ -56,7 +56,7 @@ def make_scan(cfg: Config, split: str, index: int) -> dict:
         "inner_px": lab["inner_px"],
         "valid": lab["valid"],
         "params": {**p.as_dict(), "crop_start_px": out.crop_start_px,
-                   "depth_px_um": out.depth_px_um},
+                   "depth_px_um": out.depth_px_um, "reflector_db": out.reflector_db},
     }
 
 

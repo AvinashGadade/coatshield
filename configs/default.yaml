@@ -186,6 +186,16 @@ oct:
   detect_snr_db: 12.0             # Implementation: apex search threshold above the noise floor
   snr_db: 35.0                    # Default surface SNR at normal incidence for a single scan
 
+solve:
+  max_angle_deg: 20.0             # Build guide: use only A-scans below this incidence angle
+  apex_angle_deg: 2.0             # Assumption: reflectance is read within this angle of the apex, where fall-off is under 2%
+  assumed_n: 1.5                  # The usual fixed assumption the solver replaces
+  search_px: 4                    # Implementation: rows around a surface searched for its peak
+  core_branch: below              # below | above: side of the core index on which the coating index is sought (ratio method)
+  anchor_pellets: 30              # Build guide: microscopy cross-sections of about 30 pellets per product
+  microscopy_sigma_um: 0.5        # Assumption: repeatability of a microscopy thickness reading
+  min_ascans: 5                   # Assumption: fewest valid A-scans for a pellet to be reported
+
 oct_dataset:
   n_train: 10000                  # Build guide
   n_val: 1000                     # Build guide

@@ -22,6 +22,7 @@ _UPSAMPLE = 2  # spectral upsampling before the wavelength-to-wavenumber interpo
 # Share of the depth range used as noise floor: below the pellet, above the last tenth
 # where the wavelength-to-wavenumber interpolation lets the noise roll off.
 _NOISE_REGION = (0.64, 0.76)
+_REFLECTOR_SEARCH_PX = 4  # rows around the reflector's nominal depth searched for its peak
 _SAMPLE_GAP_UM = 30.0  # the pellet search starts this far below the reference reflector
 
 
@@ -34,6 +35,7 @@ class Processed:
     depth_px_um: float
     dispersion: tuple[float, float]
     noise_floor: float  # mean noise power of a single processed A-scan
+    reflector_db: float  # peak of the on-window reference reflector, dB above the noise floor
     stages: dict = field(default_factory=dict)  # intermediates, when asked for
 
 
@@ -131,6 +133,25 @@ def _neighbour_average(power: np.ndarray, n: int) -> np.ndarray:
     return sum(padded[i : i + power.shape[0]] for i in range(n)) / n
 
 
+def peak_db(db: np.ndarray, rows: np.ndarray, search_px: int) -> np.ndarray:
+    """Peak level (dB) of each A-scan within search_px rows of the given row.
+
+    A parabola through the top three samples (a Gaussian fit, in dB) removes the loss
+    from a peak falling between depth pixels.
+    """
+    centre = np.round(np.broadcast_to(rows, db.shape[:1])).astype(int)
+    offsets = np.arange(-search_px, search_px + 1)
+    idx = np.clip(centre[:, None] + offsets[None, :], 1, db.shape[1] - 2)
+    top = np.take_along_axis(idx, np.take_along_axis(db, idx, axis=1).argmax(axis=1)[:, None],
+                             axis=1)
+    y0 = np.take_along_axis(db, top, axis=1)[:, 0]
+    lo = np.take_along_axis(db, top - 1, axis=1)[:, 0]
+    hi = np.take_along_axis(db, top + 1, axis=1)[:, 0]
+    curve = lo - 2.0 * y0 + hi
+    shift = np.where(curve < 0, 0.5 * (lo - hi) / np.where(curve < 0, curve, 1.0), 0.0)
+    return y0 - 0.25 * (lo - hi) * np.clip(shift, -0.5, 0.5)
+
+
 def to_uint8(db: np.ndarray, oc: OctCfg) -> np.ndarray:
     lo, hi = oc.db_range
     return np.clip(np.round((db - lo) / (hi - lo) * 255.0), 0, 255).astype(np.uint8)
@@ -167,9 +188,12 @@ def process(
     crop_start_px = int(np.clip(crop_start_px, 0, db_full.shape[1] - oc.depth_pixels))
     db = db_full[:, crop_start_px : crop_start_px + oc.depth_pixels]
 
+    reflector = peak_db(db_full, np.array(oc.reflector_um / spec.depth_px_um),
+                        _REFLECTOR_SEARCH_PX)
     out = Processed(image=to_uint8(db, oc), db=db.astype(np.float32), x_um=x_out,
                     crop_start_px=crop_start_px, depth_px_um=spec.depth_px_um,
-                    dispersion=tuple(dispersion), noise_floor=floor)
+                    dispersion=tuple(dispersion), noise_floor=floor,
+                    reflector_db=float(10.0 * np.log10(np.mean(10.0 ** (reflector / 10.0)))))
     if stages:
         out.stages = {"fringes_k": fringes, "power": power, "db_full": db_full}
     return out
@@ -194,6 +218,32 @@ def chain_gains(oc: OctCfg) -> tuple[float, float]:
     Both are taken at the depths where pellets sit (the standoff range).
     """
     return _chain_gains(oc)
+
+
+_ROLLOFF_STEP_UM = 20.0  # spacing of the mirror positions in the roll-off calibration
+
+
+@lru_cache(maxsize=8)
+def _sensitivity_curve(oc: OctCfg) -> tuple[np.ndarray, np.ndarray]:
+    from coatshield.oct.physics import sensitivity_rolloff
+
+    spec = spectrometer(oc)
+    depths = np.arange(_ROLLOFF_STEP_UM, 0.7 * spec.z_max_um, _ROLLOFF_STEP_UM)
+    fringes = (spec.source[None, :] * sensitivity_rolloff(depths, spec.z_max_um)[:, None]
+               * np.cos(2.0 * spec.k[None, :] * depths[:, None]))
+    analytic = hilbert(to_wavenumber(fringes, spec), axis=-1)
+    db = 10.0 * np.log10(depth_profile(analytic, spec, oc, (0.0, 0.0)))
+    return depths, peak_db(db, depths / spec.depth_px_um, _REFLECTOR_SEARCH_PX)
+
+
+def sensitivity_db(oc: OctCfg, z_um) -> np.ndarray:
+    """Signal level of a unit reflector against depth (dB), the instrument's roll-off curve.
+
+    Found the way an instrument is calibrated: a mirror moved through the depth range.
+    It combines the spectrometer's pixel roll-off and the loss in the processing chain.
+    """
+    depths, level = _sensitivity_curve(oc)
+    return np.interp(z_um, depths, level)
 
 
 @lru_cache(maxsize=8)
