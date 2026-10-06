@@ -106,14 +106,16 @@ controller:
   min_objects: 500                # Assumption: fewest accepted objects in the window before any stop decision
 
 diagnosis:
-  window_min: 30.0                # Assumption: trailing window for growth rate and decay-exponent fits
+  window_min: 60.0                # Assumption: trailing window for the growth-rate and spread signals
+  baseline_h: 1.0                 # Assumption: the first hour sets the fines baseline; verdicts start after twice this
   growth_low_factor: 0.85         # Assumption: growth below 85% of the recipe rate counts as low
-  agglomerate_high_factor: 3.0    # Assumption: gate twin share above 3x its early-batch level counts as high
-  fines_high_factor: 3.0          # Assumption: fines rate above 3x its early-batch level counts as high
-  spread_high_factor: 1.25        # Assumption: size-adjusted spread above 1.25x the sqrt(1/t) expectation counts as high
+  agglomerate_high_pct: 3.0       # Assumption: gate twin share above 3% of pellets counts as high
+  fines_high_factor: 3.0          # Assumption: fines rate above 3x its first-hour level counts as high
+  spread_high_factor: 1.15        # Assumption: size-adjusted spread above 1.15x the healthy level counts as high
+  spread_reference_ratio: 1.2     # Calibrated: healthy batches read 1.2x the predicted level through this estimator (seeds 1-3)
+  spread_from_h: 4.0              # Assumption: the spread signal is used only once the coat is thick enough to resolve it
   undecided_high: 0.20            # Assumption: undecided share above 20% points to window fouling
-  size_shift_um: 30.0             # Assumption: median size this far above the certificate points to a substrate shift
-  baseline_h: 1.0                 # Assumption: the first hour sets the batch's own baseline rates
+  size_shift_um: 30.0             # Assumption: core median this far above the certificate points to a substrate shift
 
 validation:
   n_pellets: 100000               # Build guide: validation grid runs at 100,000 pellets
@@ -126,6 +128,14 @@ validation:
   quick_n_seeds: 4                # Implementation: seeds per cell in --quick mode (about 5 minutes on a laptop)
   quick_m_grid: [0.0, 3.0]        # Implementation: --quick grid
   quick_k_grid: [0.0, 1.0]        # Implementation: --quick grid
+
+app:
+  n_pellets: 200000               # Build guide: 200,000 pellets for the dashboard's precomputed runs
+  n_pellets_live: 50000           # Implementation: pellets for a run computed live after a slider move
+  frame_every: 10                 # Implementation: time-scrubber frames are every 10th step
+  animation_pellets: 2000         # Build guide: pellets drawn in the animated bed
+  animation_frames: 48            # Implementation: frames in one loop of the bed animation
+  sample_rows: 3000               # Implementation: window records kept per precomputed scenario
 
 dissolution:
   # Published pellet data: t63 about 30, 50, 70 min at 9.8, 13.2, 16.1 um (Pharmaceutics 16:1307)

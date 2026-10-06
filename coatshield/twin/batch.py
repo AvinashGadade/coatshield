@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from coatshield.config import REPO_ROOT, Config
+from coatshield.config import BATCH_SECTIONS, REPO_ROOT, Config
 from coatshield.seeds import rng
 from coatshield.twin.faults import fault_state
 from coatshield.twin.growth import PassSampler, Recipe, fuse_step, grow_step, make_recipe
@@ -17,8 +17,6 @@ from coatshield.twin.population import SINGLE, TWIN, UM3_PER_CM3, Population, ma
 from coatshield.twin.sampling import sample_step
 
 TWIN_VERSION = "1"  # bump when the simulation changes, so old cache entries are not reused
-# Sections that only affect what is computed from a batch, never the batch itself.
-DOWNSTREAM_SECTIONS = ("estimator", "controller", "diagnosis", "validation", "dissolution")
 CACHE_DIR = REPO_ROOT / ".cache" / "batches"
 _MEMORY: dict[str, BatchResult] = {}
 
@@ -209,7 +207,7 @@ def _simulate(cfg: Config) -> BatchResult:
 
 def twin_hash(cfg: Config) -> str:
     """Config hash over the sections that shape the batch (estimator settings excluded)."""
-    return cfg.hash(exclude=DOWNSTREAM_SECTIONS)
+    return cfg.hash(include=BATCH_SECTIONS)
 
 
 def run_batch(cfg: Config, cache: bool = True, cache_dir: Path | None = None) -> BatchResult:

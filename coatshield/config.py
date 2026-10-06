@@ -28,6 +28,14 @@ FAULT_SCENARIOS = (
 )
 
 
+# Sections that decide what a batch looks like and how it is analysed. Reports and
+# dashboard bundles are named by a hash over these, so the names stay stable when
+# sections for later modules are added.
+BATCH_SECTIONS = ("seed", "pellet", "coating", "core", "batch", "wurster", "twin", "window",
+                  "camera", "spec", "measurement", "gate", "fault")
+ANALYSIS_SECTIONS = BATCH_SECTIONS + ("estimator", "controller", "diagnosis", "validation")
+
+
 class _Section(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -148,13 +156,15 @@ class ControllerCfg(_Section):
 
 class DiagnosisCfg(_Section):
     window_min: float = Field(gt=0)
+    baseline_h: float = Field(gt=0)
     growth_low_factor: float = Field(gt=0, lt=1)
-    agglomerate_high_factor: float = Field(gt=1)
+    agglomerate_high_pct: float = Field(gt=0)
     fines_high_factor: float = Field(gt=1)
     spread_high_factor: float = Field(gt=1)
+    spread_reference_ratio: float = Field(gt=0)
+    spread_from_h: float = Field(ge=0)
     undecided_high: float = Field(gt=0, le=1)
     size_shift_um: float = Field(gt=0)
-    baseline_h: float = Field(gt=0)
 
 
 class ValidationCfg(_Section):
@@ -168,6 +178,15 @@ class ValidationCfg(_Section):
     quick_n_seeds: int = Field(gt=0)
     quick_m_grid: tuple[float, ...]
     quick_k_grid: tuple[float, ...]
+
+
+class AppCfg(_Section):
+    n_pellets: int = Field(gt=0)
+    n_pellets_live: int = Field(gt=0)
+    frame_every: int = Field(gt=0)
+    animation_pellets: int = Field(gt=0)
+    animation_frames: int = Field(gt=1)
+    sample_rows: int = Field(gt=0)
 
 
 class DissolutionCfg(_Section):
@@ -206,11 +225,16 @@ class Config(_Section):
     controller: ControllerCfg
     diagnosis: DiagnosisCfg
     validation: ValidationCfg
+    app: AppCfg
     dissolution: DissolutionCfg
     oct: OctCfg
 
     def to_dict(self) -> dict[str, Any]:
         return self.model_dump(mode="json")
+
+    def analysis_hash(self) -> str:
+        """Hash that names validation reports: the batch and everything computed from it."""
+        return self.hash(include=ANALYSIS_SECTIONS)
 
     def with_overrides(self, overrides: dict[str, Any]) -> Config:
         """Return a validated copy with nested or dotted overrides applied.
@@ -219,9 +243,15 @@ class Config(_Section):
         """
         return Config.model_validate(_deep_merge(self.to_dict(), _expand_dotted(overrides)))
 
-    def hash(self, exclude: tuple[str, ...] = ()) -> str:
-        """Short, stable hash of the configuration (first 12 hex chars of SHA-256)."""
+    def hash(self, exclude: tuple[str, ...] = (), include: tuple[str, ...] | None = None) -> str:
+        """Short, stable hash of the configuration (first 12 hex chars of SHA-256).
+
+        include limits the hash to the named sections, so adding a section for a later
+        module does not rename results that never depended on it.
+        """
         data = self.to_dict()
+        if include is not None:
+            data = {key: data[key] for key in include}
         for key in exclude:
             data.pop(key, None)
         blob = json.dumps(data, sort_keys=True, separators=(",", ":"))

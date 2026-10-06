@@ -82,3 +82,10 @@ def test_hash_is_stable_and_sensitive():
     assert len(a.hash()) == 12
     assert a.with_overrides({"window.size_bias_m": 2.0}).hash() != a.hash()
     assert a.with_overrides({"seed": 1}).hash(exclude=("seed",)) == a.hash(exclude=("seed",))
+
+
+def test_analysis_hash_ignores_sections_of_later_modules():
+    base = load_config()
+    assert base.with_overrides({"app.frame_every": 5}).analysis_hash() == base.analysis_hash()
+    assert base.with_overrides({"oct.center_nm": 1300}).analysis_hash() == base.analysis_hash()
+    assert base.with_overrides({"spec.d10_min_um": 11}).analysis_hash() != base.analysis_hash()
