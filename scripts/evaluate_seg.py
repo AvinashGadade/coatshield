@@ -81,7 +81,8 @@ def main() -> None:
             f"| {RUNS.get(name, name)} | {info['parameters']:,} | {table.outer_mae_px.mean():.2f} "
             f"| {table.inner_mae_px.mean():.2f} | {good.outer_mae_px.mean():.2f} | "
             f"{good.inner_mae_px.mean():.2f} | {table.dice_coating.mean():.3f} | {thin:.1f} |")
-    lines += ["", "Ablation (ResNet-18 U-Net, transformer hybrid): not run unless listed above.", ""]
+    lines += ["", "Ablation (ResNet-18 U-Net, transformer hybrid): not run unless listed above.",
+              ""]
     text = "\n".join(lines)
     (REPORTS_DIR / f"seg_evaluation_{tag}.md").write_text(text)
     print(text)
