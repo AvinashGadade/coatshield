@@ -42,8 +42,7 @@ def fault_cases(cfg: Config, quick: bool = False) -> list[dict]:
     ]
 
 
-def case_config(case: dict, base_overrides: dict | None = None) -> Config:
-    base = load_config(overrides=base_overrides)
+def case_config(case: dict, base: Config) -> Config:
     return base.with_overrides(
         {
             "seed": case["seed"],
@@ -56,9 +55,14 @@ def case_config(case: dict, base_overrides: dict | None = None) -> Config:
     )
 
 
-def run_case(case: dict, base_overrides: dict | None = None) -> dict:
-    """Simulate one batch, estimate, run the controllers, and score against the truth."""
-    cfg = case_config(case, base_overrides)
+def run_case(case: dict, base_json: str | None = None) -> dict:
+    """Simulate one batch, estimate, run the controllers, and score against the truth.
+
+    base_json is the base configuration as JSON (a snapshot taken when the run started,
+    so a long run is not affected by later edits to the YAML); default: the config on disk.
+    """
+    base = Config.model_validate_json(base_json) if base_json else load_config()
+    cfg = case_config(case, base)
     result = run_batch(cfg, cache=False)
     est = run_estimators(result, cfg, bootstrap="needed")
     outcome = evaluate_controllers(result, est, cfg)

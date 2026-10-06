@@ -145,5 +145,59 @@ dissolution:
 oct:
   center_nm: 830.0                # UHR-OCT class
   fwhm_nm: 200.0                  # About 1.5 um axial resolution in air
-  lateral_spot_um: 18.0           # Gives about 600 um depth of focus
+  lateral_spot_um: 18.0           # Gives about 600 um depth of focus (1/e^2 beam diameter)
   ascan_rate_hz: 250000.0         # Upper end of current commercial heads
+  n_pixels: 2048                  # Build guide: spectrometer pixels, evenly spaced in wavelength
+  span_nm: 440.0                  # Assumption: spectrometer covers 2.2x the source FWHM
+  exposure_duty: 0.5              # Assumption: exposure is half the A-scan period
+  reference_reflectance: 0.04     # Assumption: reference-arm power reflectance
+  # Depths are optical path in air from the zero-delay plane.
+  window_face_um: 30.0            # Assumption: sample-side face of the sapphire window
+  window_face_reflectance: 0.0005 # Assumption: anti-reflection coated sapphire face
+  reflector_um: 60.0              # Assumption: on-window reference reflector depth
+  reflector_reflectance: 0.002    # Assumption: small calibration reflector
+  standoff_um: [150.0, 350.0]     # Assumption: pellet apex depth range, inside the depth of focus
+  falloff_deg: 14.0               # Assumption: Gaussian width of the interface signal against incidence angle
+  field_um: 512.0                 # Implementation: lateral field recorded around the pellet apex
+  max_raw_ascans: 512             # Implementation: slower pellets are simulated at this many A-scans, noise scaled to match
+  scatter_depth_um: 160.0         # Implementation: geometric depth below the surface filled with scatterers
+  coating_scatter_per_um2: 0.02   # Assumption: sparse scatterers in a clear film (per um^2 of the scan plane)
+  coating_scatter_amp: 0.004      # Assumption: amplitude reflectivity of one coating scatterer
+  coating_atten_per_mm: 2.0       # Assumption: amplitude attenuation of a clear film
+  core_scatter_per_um2: 0.35      # Assumption: dense scatterers in the core, several per resolution cell
+  core_scatter_amp: 0.03          # Assumption: core speckle about 16 dB under the surface reflection
+  core_atten_per_mm: 8.0          # Assumption: core signal fades by about 14 dB per 100 um
+  pigment_scatter_per_um2: 0.5    # Assumption: scatterer density added at pigment = 1
+  pigment_scatter_amp: 0.014      # Assumption: amplitude of pigment scatterers
+  pigment_atten_per_mm: 90.0      # Assumption: attenuation added at pigment = 1 (hides the coating-core interface)
+  haze_thickness_um: 20.0         # Assumption: fouling haze layer on the window
+  haze_scatter_per_um2: 0.4       # Assumption: haze scatterer density at fouling = 1
+  haze_scatter_amp: 0.01          # Assumption: amplitude of haze scatterers at fouling = 1
+  fouling_transmission: 0.25      # Assumption: one-way amplitude transmission of a fully fouled window
+  dispersion_rad: [6.0, 2.0]      # Assumption: quadratic and cubic arm mismatch, radians at the band edge
+  window: hann                    # hann | none: spectral window before the FFT
+  zero_pad: 2                     # Implementation: FFT length = zero_pad x n_pixels (0.36 um depth pixels)
+  depth_pixels: 512               # Build guide: crop to 512 depth pixels
+  crop_margin_px: 40              # Implementation: depth pixels kept above the pellet apex
+  out_ascans: 128                 # Build guide: scans stored as 128 x 512
+  average_ascans: 3               # Build guide: average 3 neighbouring A-scans
+  db_range: [-5.0, 55.0]          # Implementation: dB above the noise floor mapped onto uint8 0-255
+  valid_snr_db: 6.0               # Assumption: a column counts as valid when its surface return clears this SNR
+  detect_snr_db: 12.0             # Implementation: apex search threshold above the noise floor
+  snr_db: 35.0                    # Default surface SNR at normal incidence for a single scan
+
+oct_dataset:
+  n_train: 10000                  # Build guide
+  n_val: 1000                     # Build guide
+  n_locked: 2000                  # Build guide: locked test set, built by the test owner alone
+  thickness_um: [2.0, 40.0]       # Build guide, log-uniform
+  n_coat: [1.30, 1.60]            # Build guide
+  n_core: [1.50, 1.58]            # Build guide
+  radius_um: [125.0, 750.0]       # Build guide
+  snr_db: [15.0, 45.0]            # Build guide
+  speed_m_s: [0.05, 0.5]          # Build guide
+  fouling_beta: [1.0, 6.0]        # Build guide "fouling mostly low": Beta(1, 6)
+  pigment_high_share: 0.2         # Build guide: pigment high in 20% of scans
+  pigment_low: [0.0, 0.15]        # Assumption: pigment level of the other scans
+  pigment_high: [0.5, 1.0]        # Assumption: pigment level of the high-pigment scans
+  seed_offsets: {train: 0, val: 1000000, locked: 2000000}  # Seed ranges that never overlap

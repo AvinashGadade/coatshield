@@ -319,7 +319,8 @@ def test_validation_cases_cover_the_guide_grid():
 
 def test_run_case_scores_estimators_and_controllers():
     case = {"kind": "grid", "scenario": "none", "m": 3.0, "k": 1.0, "gamma": 0.0, "seed": 5}
-    row = run_case(case, base_overrides={"validation.n_pellets": 20000})
+    base = load_config(overrides={"validation.n_pellets": 20000})
+    row = run_case(case, base.model_dump_json())
     assert row["hybrid_d10_mae"] < 0.3 < row["raw_d10_mae"]
     assert row["C2_true_below_spec_pct"] > row["C3_true_below_spec_pct"]
     assert {"C0_stop_h", "C3_excess_coating_pct", "ideal_stop_h", "raw_d10_bias"} <= set(row)

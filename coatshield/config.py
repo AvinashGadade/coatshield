@@ -205,6 +205,60 @@ class OctCfg(_Section):
     fwhm_nm: float = Field(gt=0)
     lateral_spot_um: float = Field(gt=0)
     ascan_rate_hz: float = Field(gt=0)
+    n_pixels: int = Field(gt=16)
+    span_nm: float = Field(gt=0)
+    exposure_duty: float = Field(gt=0, le=1)
+    reference_reflectance: float = Field(gt=0, le=1)
+    window_face_um: float = Field(gt=0)
+    window_face_reflectance: float = Field(ge=0, le=1)
+    reflector_um: float = Field(gt=0)
+    reflector_reflectance: float = Field(ge=0, le=1)
+    standoff_um: tuple[float, float]
+    falloff_deg: float = Field(gt=0)
+    field_um: float = Field(gt=0)
+    max_raw_ascans: int = Field(gt=8)
+    scatter_depth_um: float = Field(gt=0)
+    coating_scatter_per_um2: float = Field(ge=0)
+    coating_scatter_amp: float = Field(ge=0)
+    coating_atten_per_mm: float = Field(ge=0)
+    core_scatter_per_um2: float = Field(ge=0)
+    core_scatter_amp: float = Field(ge=0)
+    core_atten_per_mm: float = Field(ge=0)
+    pigment_scatter_per_um2: float = Field(ge=0)
+    pigment_scatter_amp: float = Field(ge=0)
+    pigment_atten_per_mm: float = Field(ge=0)
+    haze_thickness_um: float = Field(gt=0)
+    haze_scatter_per_um2: float = Field(ge=0)
+    haze_scatter_amp: float = Field(ge=0)
+    fouling_transmission: float = Field(gt=0, le=1)
+    dispersion_rad: tuple[float, float]
+    window: Literal["hann", "none"]
+    zero_pad: int = Field(ge=1)
+    depth_pixels: int = Field(gt=8)
+    crop_margin_px: int = Field(ge=0)
+    out_ascans: int = Field(gt=8)
+    average_ascans: int = Field(ge=1)
+    db_range: tuple[float, float]
+    valid_snr_db: float
+    detect_snr_db: float
+    snr_db: float
+
+
+class OctDatasetCfg(_Section):
+    n_train: int = Field(gt=0)
+    n_val: int = Field(gt=0)
+    n_locked: int = Field(gt=0)
+    thickness_um: tuple[float, float]
+    n_coat: tuple[float, float]
+    n_core: tuple[float, float]
+    radius_um: tuple[float, float]
+    snr_db: tuple[float, float]
+    speed_m_s: tuple[float, float]
+    fouling_beta: tuple[float, float]
+    pigment_high_share: float = Field(ge=0, le=1)
+    pigment_low: tuple[float, float]
+    pigment_high: tuple[float, float]
+    seed_offsets: dict[str, int]
 
 
 class Config(_Section):
@@ -228,6 +282,7 @@ class Config(_Section):
     app: AppCfg
     dissolution: DissolutionCfg
     oct: OctCfg
+    oct_dataset: OctDatasetCfg
 
     def to_dict(self) -> dict[str, Any]:
         return self.model_dump(mode="json")

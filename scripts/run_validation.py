@@ -7,6 +7,7 @@ Writes CSVs, figures and a summary to reports/, each named with the config hash.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import time
 from functools import partial
@@ -34,19 +35,37 @@ from coatshield.estimate.validate import (  # noqa: E402
     summarise_grid,
 )
 
+CASE_KEYS = ("scenario", "gamma", "m", "k", "seed")
 
-def run_cases(cases: list[dict], workers: int, label: str) -> pd.DataFrame:
-    start = time.perf_counter()
+
+def _case_key(case: dict) -> str:
+    return json.dumps([case[k] for k in CASE_KEYS])
+
+
+def run_cases(cases: list[dict], workers: int, label: str, base_json: str,
+              done_path) -> pd.DataFrame:
+    """Run the cases in parallel; finished rows are appended to done_path so a run can resume."""
     rows = []
-    with get_context("spawn").Pool(workers) as pool:
-        for i, row in enumerate(pool.imap_unordered(partial(run_case), cases, chunksize=1), 1):
+    if done_path.exists():
+        rows = [json.loads(line) for line in done_path.read_text().splitlines() if line.strip()]
+    finished = {_case_key(r) for r in rows}
+    todo = [c for c in cases if _case_key(c) not in finished]
+    if rows:
+        print(f"  {label}: resuming, {len(rows)} batches already done", flush=True)
+    start = time.perf_counter()
+    with get_context("spawn").Pool(workers) as pool, open(done_path, "a") as out:
+        job = partial(run_case, base_json=base_json)
+        for i, row in enumerate(pool.imap_unordered(job, todo, chunksize=1), 1):
             rows.append(row)
-            if i % 20 == 0 or i == len(cases):
+            out.write(json.dumps(row) + "\n")
+            out.flush()
+            if i % 20 == 0 or i == len(todo):
                 rate = (time.perf_counter() - start) / i
-                print(f"  {label}: {i}/{len(cases)} batches, about "
-                      f"{rate * (len(cases) - i) / 60:.1f} min left", flush=True)
-    keys = ["scenario", "gamma", "m", "k", "seed"]
-    return pd.DataFrame(rows).sort_values(keys).reset_index(drop=True)
+                print(f"  {label}: {len(rows)}/{len(cases)} batches, about "
+                      f"{rate * (len(todo) - i) / 60:.1f} min left", flush=True)
+    wanted = {_case_key(c) for c in cases}
+    rows = [r for r in rows if _case_key(r) in wanted]
+    return pd.DataFrame(rows).sort_values(list(CASE_KEYS)).reset_index(drop=True)
 
 
 def _footer(fig, tag: str) -> None:
@@ -259,9 +278,13 @@ def main() -> None:
     grid_list, fault_list = grid_cases(cfg, args.quick), fault_cases(cfg, args.quick)
     print(f"config {tag}: {len(grid_list)} grid + {len(fault_list)} fault batches, "
           f"{args.workers} workers")
-    grid = run_cases(grid_list, args.workers, "grid")
+    base_json = cfg.model_dump_json()
+    progress = REPORTS_DIR / ".progress"
+    progress.mkdir(exist_ok=True)
+    grid = run_cases(grid_list, args.workers, "grid", base_json, progress / f"grid_{tag}.jsonl")
     grid.to_csv(REPORTS_DIR / f"validation_grid_{tag}.csv", index=False)
-    faults_raw = run_cases(fault_list, args.workers, "faults")
+    faults_raw = run_cases(fault_list, args.workers, "faults", base_json,
+                           progress / f"faults_{tag}.jsonl")
     faults_raw.to_csv(REPORTS_DIR / f"validation_faults_{tag}.csv", index=False)
 
     cells, faults = summarise_grid(grid), summarise_faults(faults_raw)
