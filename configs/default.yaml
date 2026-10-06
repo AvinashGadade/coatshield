@@ -72,6 +72,46 @@ measurement:
 gate:
   twin_recall_target: 0.95        # Assumption used in the 6 Oct simulation
 
+gate_vision:
+  twin_recall_min: 0.95           # Build guide: chosen method reaches twin recall of at least 95%
+  false_twin_max: 0.02            # Build guide: at most 2% of single pellets called twin
+  twin_leak_max: 0.01             # Build guide: at most 1% of twins may pass as confident singles
+  frame_px: 256                   # Build guide: 256 x 256 camera crops
+  pixel_um: 5.5                   # Build guide: 5.5 um per pixel (Eyecon2 class)
+  diameter_um: [200.0, 800.0]     # Assumption: pellet sizes drawn for the silhouette set
+  ellipticity: 0.06               # Assumption: "slight ellipticity" of single pellets (max axis difference)
+  twin_overlap: [0.05, 0.40]      # Build guide: twins overlap by 5-40% of the radius
+  rim_px: 2.0                     # Assumption: width of the bright dark-field rim
+  rim_level: 0.85                 # Assumption: rim brightness (0-1)
+  interior_level: 0.12            # Assumption: "faint interior"
+  texture: 0.04                   # Assumption: surface texture amplitude inside the pellet
+  noise: 0.02                     # Assumption: sensor noise (sd, 0-1 scale)
+  motion_blur_px: 2.0             # Build guide: strobe motion blur of up to 2 pixels
+  defocus_px: [4.0, 9.0]          # Assumption: blur of the "defocused" class
+  haze_level: [0.25, 0.5]         # Assumption: background haze of the "fouled" class
+  fines_um: [20.0, 100.0]         # Build guide: fines are 20-100 um objects
+  n_images: 30000                 # Build guide: about 30,000 balanced images
+  n_tune: 2400                    # Assumption: images used to tune the classical thresholds
+  n_test: 2400                    # Assumption: held-out images for the comparison table
+  blur_px: 1.5                    # Assumption: Gaussian blur before thresholding
+  min_area_px: 12                 # Assumption: smaller blobs are noise
+  fines_max_um: 150.0             # Assumption: objects below this equivalent diameter are fines
+  sharpness_min: 0.12             # Assumption: weaker rim gradient means defocused or fouled
+  contrast_min: 0.60              # Assumption: lower rim-to-background contrast means fouled
+  empty_level: 0.12               # Assumption: nothing brighter than this above the background means an empty frame
+  solidity_grid: [0.90, 0.92, 0.94, 0.95, 0.96, 0.97, 0.98]   # Thresholds searched for the twin rule
+  defect_grid: [0.04, 0.06, 0.08, 0.10, 0.14, 0.18]           # Defect depth / radius values searched
+  solidity_min: 0.90              # Tuned by scripts/tune_gate.py (twin if below)
+  defect_max: 0.04                # Tuned by scripts/tune_gate.py (twin if deeper, relative to radius)
+  touching_neck_max: 0.70         # Assumption: two lobes joined by a waist narrower than this share of the radius = touching
+  confidence_scale: 0.03          # Assumption: feature margin that maps to about 73% confidence
+  single_confidence_min: 0.5      # Assumption: a single passes to OCT only at or above this confidence
+  cnn_channels: [32, 64, 128, 256]  # Build guide: four convolution blocks, 32 to 256 channels
+  cnn_epochs: 20                  # Build guide: about 20 epochs
+  cnn_lr: 0.001                   # Assumption: AdamW learning rate
+  cnn_batch_size: 64              # Assumption
+  ece_bins: 10                    # Implementation: bins of the expected calibration error
+
 fault:
   scenario: none                  # none | substrate_shift | nozzle_block | over_wetting | spray_drying | maldistribution | window_fouling
   start_h: 2.0                    # Assumption: default switch-on time for a fault

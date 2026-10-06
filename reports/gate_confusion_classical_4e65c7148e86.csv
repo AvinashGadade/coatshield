@@ -1,0 +1,9 @@
+,single,twin,touching,partial,defocused,fouled,empty,fines
+single,289,0,0,11,0,0,0,0
+twin,0,289,11,0,0,0,0,0
+touching,0,80,220,0,0,0,0,0
+partial,0,0,0,300,0,0,0,0
+defocused,0,0,0,0,300,0,0,0
+fouled,0,0,0,0,0,300,0,0
+empty,0,0,0,0,0,0,300,0
+fines,0,2,4,23,0,0,0,271

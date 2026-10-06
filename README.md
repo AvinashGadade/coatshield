@@ -56,6 +56,7 @@ they exist only so the sign-off flow can be shown.
 | `coatshield/oct/` | M2: spectral-domain OCT simulator for coated pellets and its processing chain |
 | `coatshield/solve/` | M4: surface fit, refraction correction, three refractive-index methods |
 | `coatshield/seg/` | M3: compact U-Net, graph search, training and ONNX inference (models not trained yet) |
+| `coatshield/gate/` | M5: dark-field silhouette generator, classical shape gate, small CNN (not trained yet) |
 | `coatshield/compliance/` | Audit trail, e-signature, model registry, batch record |
 | `coatshield/bundle.py` | Everything the dashboard shows for one scenario, as small files |
 | `app/` | Streamlit dashboard (story mode, Batch, Distributions, Controllers, Sensitivity) |

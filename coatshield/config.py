@@ -118,6 +118,47 @@ class GateCfg(_Section):
     twin_recall_target: float = Field(ge=0, le=1)
 
 
+class GateVisionCfg(_Section):
+    twin_recall_min: float = Field(ge=0, le=1)
+    false_twin_max: float = Field(ge=0, le=1)
+    twin_leak_max: float = Field(ge=0, le=1)
+    frame_px: int = Field(gt=16)
+    pixel_um: float = Field(gt=0)
+    diameter_um: tuple[float, float]
+    ellipticity: float = Field(ge=0, lt=1)
+    twin_overlap: tuple[float, float]
+    rim_px: float = Field(gt=0)
+    rim_level: float = Field(gt=0, le=1)
+    interior_level: float = Field(ge=0, le=1)
+    texture: float = Field(ge=0)
+    noise: float = Field(ge=0)
+    motion_blur_px: float = Field(ge=0)
+    defocus_px: tuple[float, float]
+    haze_level: tuple[float, float]
+    fines_um: tuple[float, float]
+    n_images: int = Field(gt=0)
+    n_tune: int = Field(gt=0)
+    n_test: int = Field(gt=0)
+    blur_px: float = Field(ge=0)
+    min_area_px: int = Field(gt=0)
+    fines_max_um: float = Field(gt=0)
+    sharpness_min: float = Field(ge=0)
+    contrast_min: float = Field(ge=0)
+    empty_level: float = Field(ge=0, le=1)
+    solidity_grid: tuple[float, ...]
+    defect_grid: tuple[float, ...]
+    solidity_min: float = Field(gt=0, le=1)
+    defect_max: float = Field(gt=0)
+    touching_neck_max: float = Field(gt=0)
+    confidence_scale: float = Field(gt=0)
+    single_confidence_min: float = Field(ge=0, le=1)
+    cnn_channels: tuple[int, ...]
+    cnn_epochs: int = Field(gt=0)
+    cnn_lr: float = Field(gt=0)
+    cnn_batch_size: int = Field(gt=0)
+    ece_bins: int = Field(gt=1)
+
+
 class FaultCfg(_Section):
     scenario: Literal[FAULT_SCENARIOS]  # type: ignore[valid-type]
     start_h: float = Field(ge=0)
@@ -323,6 +364,7 @@ class Config(_Section):
     spec: SpecCfg
     measurement: MeasurementCfg
     gate: GateCfg
+    gate_vision: GateVisionCfg
     fault: FaultCfg
     estimator: EstimatorCfg
     controller: ControllerCfg
