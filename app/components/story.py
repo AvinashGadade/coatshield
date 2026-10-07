@@ -38,7 +38,17 @@ STEPS = (
          "Every combination of window bias and size-dependent growth, from the validation run. "
          "The toggle shows where the correction stops working.",
          state={"m": 4.0}),
+    Step("6", "The refractive index", "pages/6_Refractive_index.py",
+         "Change the true index: assuming 1.5 misreads every thickness by the same factor. "
+         "Three independent methods recover the index instead of assuming it."),
+    Step("8", "The gate", "pages/7_Gate.py",
+         "Fused pellets are flagged and counted; single pellets pass to the measurement."),
+    Step("9", "The audit panel", "pages/11_Audit.py",
+         "The model versions, the operator's signature and the log entry it writes. "
+         "The operator decides; the system shows its evidence."),
 )
+# Demo steps 5 (one pellet scan) and 7 (fouling and "undecided") join the walk once the
+# trained boundary finder and the full measurement chain exist.
 
 
 def _go(index: int) -> None:

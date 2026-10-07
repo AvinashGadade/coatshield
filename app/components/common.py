@@ -67,10 +67,31 @@ def layout(fig, title: str | None = None, height: int = 420, **kwargs):
     return fig
 
 
-def footer(bundle: Bundle | None = None, precomputed: bool | None = None) -> None:
+def latest_report(pattern: str) -> Path | None:
+    """Newest file in reports/ matching a glob pattern (reports are named by config hash)."""
+    hits = sorted(REPORTS.glob(pattern), key=lambda p: p.stat().st_mtime)
+    return hits[-1] if hits else None
+
+
+def model_versions() -> str:
+    """Active model versions for the footer and the batch record."""
+    from coatshield.compliance.registry import active_versions
+
+    versions = active_versions()
+    if not versions:
+        return "models: none registered yet (classical gate, no trained networks)"
+    return "models: " + ", ".join(f"{name} {v['version']} ({v['short_hash']})"
+                                  for name, v in versions.items())
+
+
+def footer(bundle: Bundle | None = None, precomputed: bool | None = None,
+           extra: str | None = None) -> None:
     parts = [NOTE]
     if bundle is not None:
         source = "precomputed" if precomputed else "simulated live"
         parts.append(f"config {bundle.meta['config_hash']} · {bundle.meta['n_pellets']:,} "
                      f"simulated pellets · {source}")
+    if extra:
+        parts.append(extra)
+    parts.append(model_versions())
     st.caption(" · ".join(parts))

@@ -19,3 +19,5 @@ reports/.progress/
 models/checkpoints/
 reports/validation_run.log
 dist/
+reports/dataset_build.log
+app/.runtime/
