@@ -17,3 +17,5 @@ data/test_locked/
 *.docx
 reports/.progress/
 models/checkpoints/
+reports/validation_run.log
+dist/
