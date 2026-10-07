@@ -230,6 +230,12 @@ class AppCfg(_Section):
     sample_rows: int = Field(gt=0)
 
 
+class WebCfg(_Section):
+    n_pellets: int = Field(gt=0)
+    step_s: float = Field(gt=0)
+    smooth_steps: int = Field(gt=0)
+
+
 class DissolutionCfg(_Section):
     thickness_um: tuple[float, ...]
     t63_min: tuple[float, ...]
@@ -371,6 +377,7 @@ class Config(_Section):
     diagnosis: DiagnosisCfg
     validation: ValidationCfg
     app: AppCfg
+    web: WebCfg
     dissolution: DissolutionCfg
     oct: OctCfg
     compliance: ComplianceCfg

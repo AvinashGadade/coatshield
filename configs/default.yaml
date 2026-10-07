@@ -177,6 +177,11 @@ app:
   animation_frames: 48            # Implementation: frames in one loop of the bed animation
   sample_rows: 3000               # Implementation: window records kept per precomputed scenario
 
+web:
+  n_pellets: 50000                # Build guide: the browser fallback simulates 50,000 pellets
+  step_s: 300.0                   # Implementation: 5-minute steps keep the page responsive
+  smooth_steps: 3                 # Implementation: a rule stops when the mean of its last 3 estimates reaches spec
+
 dissolution:
   # Published pellet data: t63 about 30, 50, 70 min at 9.8, 13.2, 16.1 um (Pharmaceutics 16:1307)
   thickness_um: [9.8, 13.2, 16.1]

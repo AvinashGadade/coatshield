@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoatShield twin</title>
+<style>
+  :root { --surface:#fcfcfb; --panel:#f0efec; --text:#0b0b0b; --muted:#52514e; --grid:#e4e3df;
+          --truth:#8a8983; --raw:#eb6834; --corrected:#2a78d6; --critical:#d03b3b; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--surface); color:var(--text);
+         font:16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  p.lead { color: var(--muted); margin: 0 0 20px; max-width: 62ch; }
+  .controls { background: var(--panel); border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; }
+  .controls label { display:block; font-weight:600; margin-bottom:6px; }
+  .controls input[type=range] { width: 100%; }
+  .controls .hint { color: var(--muted); font-size: .9rem; }
+  .tiles { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:18px; }
+  .tile { border:1px solid var(--grid); border-radius:10px; padding:12px 14px; }
+  .tile .k { color: var(--muted); font-size:.9rem; }
+  .tile .v { font-size:1.7rem; font-weight:650; font-variant-numeric: tabular-nums; }
+  .tile .s { color: var(--muted); font-size:.85rem; }
+  .swatch { display:inline-block; width:22px; height:3px; vertical-align:middle; margin-right:6px; border-radius:2px; }
+  .legend { display:flex; flex-wrap:wrap; gap:6px 18px; color:var(--muted); font-size:.9rem; margin:6px 0 10px; }
+  canvas { width:100%; height:auto; border:1px solid var(--grid); border-radius:10px; background:var(--surface); }
+  .note { color: var(--muted); font-size:.88rem; margin-top:16px; }
+  #verdict { font-weight:600; margin: 4px 0 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>CoatShield: the same stop rule, with and without the size-bias correction</h1>
+  <p class="lead">A simulated Wurster batch, computed in this page. The window sees big pellets more
+    often and big pellets coat faster, so a raw sample reads thicker than the batch.
+    Both rules stop when their d10 estimate reaches the spec.</p>
+  <div class="controls">
+    <label for="m">Window size bias m: <span id="mval"></span></label>
+    <input id="m" type="range" min="0" max="4" step="0.5">
+    <div class="hint">0 = the window samples every pellet equally. This bias has never been measured: it is the key assumption.</div>
+  </div>
+  <div id="verdict"></div>
+  <div class="tiles">
+    <div class="tile"><div class="k">Raw-d10 rule: truly below spec</div><div class="v" id="rawBelow"></div><div class="s" id="rawStop"></div></div>
+    <div class="tile"><div class="k">Corrected rule: truly below spec</div><div class="v" id="corBelow"></div><div class="s" id="corStop"></div></div>
+    <div class="tile"><div class="k">Raw d10 minus true d10 at the raw stop</div><div class="v" id="gap"></div><div class="s">micrometres</div></div>
+  </div>
+  <div class="legend">
+    <span><span class="swatch" style="background:var(--truth)"></span>True d10 of the batch</span>
+    <span><span class="swatch" style="background:var(--raw)"></span>Raw window sample d10</span>
+    <span><span class="swatch" style="background:var(--corrected)"></span>Corrected d10</span>
+    <span>◆ where each rule stops</span>
+  </div>
+  <canvas id="chart" width="1880" height="900" role="img" aria-label="d10 over batch time: true, raw and corrected"></canvas>
+  <p class="note" id="note"></p>
+</main>
+<script>
+"use strict";
+const P = /*PARAMS*/;
+
+// --- deterministic random numbers -------------------------------------------------
+function makeRng(seed) {
+  let a = seed >>> 0;
+  const uniform = () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const normal = () => Math.sqrt(-2 * Math.log(1 - uniform())) * Math.cos(2 * Math.PI * uniform());
+  return { uniform, normal };
+}
+
+function quantile(sorted, q) {
+  const pos = q * (sorted.length - 1), i = Math.floor(pos), f = pos - i;
+  return sorted[i] + (sorted[Math.min(i + 1, sorted.length - 1)] - sorted[i]) * f;
+}
+
+// --- the batch --------------------------------------------------------------------
+// A reduced port of the Python twin: passes per step are drawn from a normal with the
+// mean and variance of the twin's pass counts; each step's sprayed volume is shared in
+// proportion to passes x size^(2+a) and added as an exact shell, so mass is conserved.
+function simulate(m) {
+  const rng = makeRng(P.seed);
+  const n = P.nPellets, a = P.k + P.b;
+  const core = new Float64Array(n), d3 = new Float64Array(n), d = new Float64Array(n);
+  const share = new Float64Array(n), lam = new Float64Array(n), w = new Float64Array(n);
+  let area = 0;
+  for (let i = 0; i < n; i++) {
+    core[i] = P.coreMedian * Math.exp(P.sizeSigma * rng.normal());
+    d[i] = core[i]; d3[i] = core[i] ** 3;
+    const rel = core[i] / P.coreMedian;
+    share[i] = rel ** (2 + a);
+    lam[i] = P.stepS / P.cycleTime * rel ** (-P.b);
+    area += Math.PI * core[i] ** 2;
+  }
+  const minutes = P.stepS / 60;
+  const volumeStep = area * (P.depositNm / 1000) / P.cycleTime * P.stepS;  // um^3 per step
+  const nBins = P.sizeBins, steps = Math.round(P.durationH * 3600 / P.stepS);
+  const nSample = Math.round(P.objectsPerMin * Math.min(P.windowMin, minutes));
+  const out = { t: [], truth: [], raw: [], corrected: [], below: [] };
+  const h = new Float64Array(n);
+
+  for (let s = 0; s < steps; s++) {
+    let total = 0;
+    for (let i = 0; i < n; i++) {
+      const sd = Math.sqrt(lam[i] + (lam[i] * P.cycleRsd) ** 2 / minutes);
+      const passes = Math.max(0, lam[i] + sd * rng.normal());
+      w[i] = passes * share[i]; total += w[i];
+    }
+    const coef = 6 / Math.PI * volumeStep / total;
+    let dMin = Infinity, dMax = 0, nBelow = 0;
+    for (let i = 0; i < n; i++) {
+      d3[i] += coef * w[i]; d[i] = Math.cbrt(d3[i]); h[i] = 0.5 * (d[i] - core[i]);
+      if (d[i] > dMax) dMax = d[i];
+      if (d[i] < dMin) dMin = d[i];
+      if (h[i] < P.spec) nBelow++;
+    }
+    const truthD10 = quantile(Float64Array.from(h).sort(), 0.1);
+
+    // True size distribution of the bed in log-spaced classes (the reference).
+    const lo = Math.log(dMin) - 0.05, width = (Math.log(dMax) + 0.05 - lo) / nBins;
+    const fTrue = new Float64Array(nBins);
+    for (let i = 0; i < n; i++) fTrue[Math.min(nBins - 1, Math.floor((Math.log(d[i]) - lo) / width))] += 1 / n;
+
+    // Window: pellets drawn with probability ~ size^m, thickness read with noise.
+    const sSize = new Float64Array(nSample), sH = new Float64Array(nSample);
+    for (let j = 0; j < nSample;) {
+      const i = Math.floor(rng.uniform() * n);
+      if (rng.uniform() < (d[i] / dMax) ** m) {
+        sSize[j] = d[i] + P.cameraNoise * rng.normal();
+        sH[j] = Math.max(0, h[i] + P.measureSigma * rng.normal());
+        j++;
+      }
+    }
+    const rawD10 = quantile(Float64Array.from(sH).sort(), 0.1);
+
+    // Correction: weight each reading by f_true / f_obs of its size class, after pulling
+    // it toward its class mean by the share of its scatter that is measurement noise.
+    const count = new Float64Array(nBins), sum = new Float64Array(nBins), sq = new Float64Array(nBins);
+    const bin = new Int32Array(nSample);
+    for (let j = 0; j < nSample; j++) {
+      const b = Math.max(0, Math.min(nBins - 1, Math.floor((Math.log(sSize[j]) - lo) / width)));
+      bin[j] = b; count[b]++; sum[b] += sH[j]; sq[b] += sH[j] ** 2;
+    }
+    // Size trend h ~ D^beta from the class means, for classes the window barely saw.
+    let sw = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+    for (let b = 0; b < nBins; b++) if (count[b] > 0 && sum[b] > 0) {
+      const x = lo + (b + 0.5) * width, y = Math.log(sum[b] / count[b]);
+      sw += count[b]; sx += count[b] * x; sy += count[b] * y; sxx += count[b] * x * x; sxy += count[b] * x * y;
+    }
+    const beta = (sxy - sx * sy / sw) / Math.max(sxx - sx * sx / sw, 1e-12), alpha = sy / sw - beta * sx / sw;
+    const trend = (b) => Math.exp(alpha + beta * (lo + (b + 0.5) * width));
+    let resid = 0;
+    for (let j = 0; j < nSample; j++) resid += ((sH[j] - trend(bin[j])) / trend(bin[j])) ** 2;
+    const meanTrend = Math.exp(alpha + beta * sx / sw);
+    const cv = Math.sqrt(Math.max(0, resid / nSample - (P.measureSigma / meanTrend) ** 2));
+
+    const items = [];
+    for (let j = 0; j < nSample; j++) {
+      const b = bin[j];
+      if (count[b] < P.minBinCount) continue;
+      const mean = sum[b] / count[b], variance = sq[b] / count[b] - mean * mean;
+      const keep = Math.sqrt(Math.max(0, 1 - P.measureSigma ** 2 / Math.max(variance, 1e-12)));
+      items.push([mean + keep * (sH[j] - mean), fTrue[b] / count[b]]);
+    }
+    // Sparse classes: the trend with the pooled spread, as nine equally likely points.
+    const Z = [-1.593, -0.967, -0.589, -0.282, 0, 0.282, 0.589, 0.967, 1.593];
+    for (let b = 0; b < nBins; b++) if (count[b] < P.minBinCount && fTrue[b] > 0)
+      for (const z of Z) items.push([trend(b) * (1 + cv * z), fTrue[b] / Z.length]);
+    items.sort((x, y) => x[0] - y[0]);
+    let acc = 0, corD10 = items[items.length - 1][0];
+    for (const [value, weight] of items) { acc += weight; if (acc >= 0.1) { corD10 = value; break; } }
+
+    out.t.push((s + 1) * P.stepS / 3600); out.truth.push(truthD10);
+    out.raw.push(rawD10); out.corrected.push(corD10); out.below.push(100 * nBelow / n);
+  }
+  // One step's estimate is noisy, and stopping at the first noisy crossing would stop early.
+  // Each rule therefore waits until the mean of its last few estimates reaches the spec.
+  const first = (arr) => arr.findIndex((_, i) => i + 1 >= P.smoothSteps &&
+    arr.slice(i + 1 - P.smoothSteps, i + 1).reduce((x, y) => x + y, 0) / P.smoothSteps >= P.spec);
+  out.rawStop = first(out.raw); out.corStop = first(out.corrected);
+  return out;
+}
+
+// --- page -------------------------------------------------------------------------
+function draw(r) {
+  const cv = document.getElementById("chart"), g = cv.getContext("2d");
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const W = cv.width, H = cv.height, L = 110, R = 40, T = 40, B = 100;
+  const t0 = r.t[r.t.length - 1] / 2, t1 = r.t[r.t.length - 1];
+  const from = r.t.findIndex((t) => t >= t0);
+  const ys = [...r.truth.slice(from), ...r.raw.slice(from), P.spec];
+  const y0 = Math.floor(Math.min(...ys)), y1 = Math.ceil(Math.max(...ys));
+  const X = (t) => L + (t - t0) / (t1 - t0) * (W - L - R), Y = (v) => H - B - (v - y0) / (y1 - y0) * (H - T - B);
+  g.clearRect(0, 0, W, H); g.font = "26px system-ui, sans-serif"; g.lineWidth = 1;
+  g.strokeStyle = css("--grid"); g.fillStyle = css("--muted");
+  for (let v = y0; v <= y1; v++) { g.beginPath(); g.moveTo(L, Y(v)); g.lineTo(W - R, Y(v)); g.stroke(); g.textAlign = "right"; g.fillText(v, L - 14, Y(v) + 9); }
+  for (let t = Math.ceil(t0); t <= t1; t++) { g.textAlign = "center"; g.fillText(t, X(t), H - B + 40); }
+  g.fillText("Batch time (h)", (L + W - R) / 2, H - 16);
+  g.save(); g.translate(34, (T + H - B) / 2); g.rotate(-Math.PI / 2); g.fillText("d10 coating thickness (µm)", 0, 0); g.restore();
+  g.setLineDash([14, 10]); g.strokeStyle = css("--text"); g.beginPath(); g.moveTo(L, Y(P.spec)); g.lineTo(W - R, Y(P.spec)); g.stroke(); g.setLineDash([]);
+  g.textAlign = "right"; g.fillStyle = css("--text"); g.fillText("spec " + P.spec + " µm", W - R - 8, Y(P.spec) - 12);
+  const line = (arr, color, width) => { g.strokeStyle = css(color); g.lineWidth = width; g.beginPath();
+    for (let i = from; i < arr.length; i++) { const x = X(r.t[i]), y = Y(arr[i]); if (i === from) g.moveTo(x, y); else g.lineTo(x, y); } g.stroke(); };
+  line(r.truth, "--truth", 6); line(r.raw, "--raw", 4); line(r.corrected, "--corrected", 4);
+  const mark = (i, label, dy) => { if (i < 0) return; const x = X(r.t[i]), y = Y(r.truth[i]); g.fillStyle = css("--text");
+    g.beginPath(); g.moveTo(x, y - 16); g.lineTo(x + 16, y); g.lineTo(x, y + 16); g.lineTo(x - 16, y); g.closePath(); g.fill();
+    g.strokeStyle = css("--surface"); g.lineWidth = 3; g.stroke(); g.textAlign = "center"; g.fillText(label, x, y + dy); };
+  mark(r.rawStop, "raw rule stops", 52); if (r.corStop !== r.rawStop) mark(r.corStop, "corrected rule stops", -30);
+}
+
+function show(m) {
+  const r = simulate(m), set = (id, text) => { document.getElementById(id).textContent = text; };
+  const pct = (i) => i < 0 ? "no stop" : r.below[i].toFixed(0) + " %";
+  const when = (i) => i < 0 ? "does not reach spec in the simulated time" : "stops at " + r.t[i].toFixed(2) + " h";
+  set("mval", m.toFixed(1)); set("rawBelow", pct(r.rawStop)); set("corBelow", pct(r.corStop));
+  set("rawStop", when(r.rawStop)); set("corStop", when(r.corStop));
+  set("gap", r.rawStop < 0 ? "–" : (r.raw[r.rawStop] - r.truth[r.rawStop]).toFixed(1));
+  const a = r.rawStop < 0 ? NaN : r.below[r.rawStop], b = r.corStop < 0 ? NaN : r.below[r.corStop];
+  set("verdict", !(a > 0 && b > 0) ? "" : a > 1.3 * b
+    ? "The raw rule ships " + (a / b).toFixed(1) + "× the out-of-spec pellets of the corrected rule."
+    : "With this little window bias the two rules agree.");
+  set("note", "Demonstration on simulated data, not a validated GMP system. " + P.nPellets.toLocaleString() +
+    " simulated pellets, " + (P.stepS / 60) + "-minute steps, spec d10 ≥ " + P.spec + " µm, size-growth exponent k = " + P.k +
+    ". This page is a reduced port of the Python twin (config " + P.configHash + "); its numbers are close to, not identical with, the dashboard's.");
+  draw(r);
+}
+
+if (typeof document !== "undefined") {
+  const slider = document.getElementById("m");
+  slider.value = P.m;
+  slider.addEventListener("change", () => show(Number(slider.value)));
+  slider.addEventListener("input", () => { document.getElementById("mval").textContent = Number(slider.value).toFixed(1); });
+  show(P.m);
+} else {
+  module.exports = { simulate, P };
+}
+</script>
+</body>
+</html>
