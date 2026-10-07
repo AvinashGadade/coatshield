@@ -314,6 +314,12 @@ class ChainCfg(_Section):
     gallery_per_scenario: int = Field(gt=0)
     twin_share: float = Field(ge=0, lt=1)
     fines_share: float = Field(ge=0, lt=1)
+    fouling_edges: tuple[float, ...]
+    snr_edges: tuple[float, ...]
+    thickness_edges: tuple[float, ...]
+    min_cell_count: int = Field(gt=0)
+    operating_snr_db: float
+    operating_pigment: float = Field(ge=0, le=1)
 
 
 class SegCfg(_Section):

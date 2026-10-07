@@ -250,6 +250,12 @@ chain:
   gallery_per_scenario: 200       # Build guide: about 200 processed objects per scenario
   twin_share: 0.10                # Assumption: share of twins in the calibration mix
   fines_share: 0.05               # Assumption: share of fines in the calibration mix
+  fouling_edges: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]    # Implementation: bins of the error-model tables
+  snr_edges: [15.0, 25.0, 35.0, 45.0]              # Implementation
+  thickness_edges: [2.0, 6.0, 12.0, 20.0, 40.0]    # Implementation
+  min_cell_count: 15              # Implementation: fewer objects than this and a table cell falls back to a coarser average
+  operating_snr_db: 35.0          # Assumption: surface SNR of the scans in a normal batch
+  operating_pigment: 0.05         # Assumption: pigment level of the product in a normal batch
 
 seg:
   widths: [16, 32, 64, 128, 256]  # Build guide: compact 4-level U-Net, about 2 M parameters

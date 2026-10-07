@@ -94,3 +94,86 @@ def test_threshold_tuning_bounds_the_share_of_large_errors(cfg):
     assert tuned["undecided_share"] == pytest.approx(0.28, abs=0.08)
     hopeless = conf.tune_threshold(scores, np.full(4000, 9.0), cfg)
     assert hopeless["undecided_share"] == 1.0
+
+
+# --- error model ----------------------------------------------------------------
+
+
+def calibration_rows(cfg, n=3000):
+    """Synthetic calibration records with a known error structure."""
+    import pandas as pd
+
+    from coatshield.seeds import rng
+
+    gen = rng("test.error_model")
+    fouling = gen.random(n)
+    snr = gen.uniform(15, 45, n)
+    thickness = gen.uniform(2, 40, n)
+    klass = np.where(gen.random(n) < 0.15, TWIN, SINGLE)
+    gated = np.where(klass == TWIN, gen.random(n) < 0.97, gen.random(n) < 0.04)
+    undecided = gen.random(n) < 1 / (1 + np.exp(-(-4 + 5 * fouling)))
+    status = np.where(gated, "gated", np.where(undecided, "undecided", "measured"))
+    measured = thickness + 0.3 + (0.4 + 1.2 * fouling) * gen.standard_normal(n)
+    return pd.DataFrame({
+        "status": status, "thickness_um": np.where(status == "gated", np.nan, measured),
+        "true_true_class": klass, "true_thickness_um": thickness, "true_fouling": fouling,
+        "true_snr_db": snr, "true_pigment": gen.random(n) * 0.2,
+    })
+
+
+@pytest.fixture(scope="module")
+def error_model(cfg):
+    from coatshield.chain.error_model import fit_error_model
+
+    return fit_error_model(calibration_rows(cfg), cfg, {"segmenter": "test"})
+
+
+def test_error_model_recovers_bias_spread_leak_and_undecided_curve(cfg, error_model):
+    m = error_model
+    bias, spread_clean = m.bias_spread(0.1, 30.0, 16.0)
+    _, spread_fouled = m.bias_spread(0.9, 30.0, 16.0)
+    assert bias == pytest.approx(0.3, abs=0.15)
+    assert spread_clean == pytest.approx(0.52, abs=0.15)
+    assert spread_fouled > spread_clean + 0.6
+    assert m.twin_leak == pytest.approx(0.03, abs=0.02)
+    assert m.single_reject == pytest.approx(0.04, abs=0.015)
+    assert m.p_undecided(0.0, 0.05, 35.0) < 0.06 < 0.4 < m.p_undecided(1.0, 0.05, 35.0)
+    assert m.meta["segmenter"] == "test" and m.meta["n_objects"] == 3000
+
+
+def test_error_model_saves_with_a_hash_and_refuses_edits(cfg, error_model, tmp_path):
+    import json
+
+    from coatshield.chain.error_model import load_error_model
+
+    path = tmp_path / "error_model.json"
+    digest = error_model.save(path)
+    assert len(digest) == 64 and load_error_model(path).sha256() == digest
+    data = json.loads(path.read_text())
+    data["twin_leak"] = 0.0
+    edited = tmp_path / "edited.json"
+    edited.write_text(json.dumps(data))
+    with pytest.raises(ValueError, match="does not match"):
+        load_error_model(edited)
+
+
+def test_twin_uses_the_error_model_when_configured(cfg, error_model, tmp_path):
+    from coatshield.twin.batch import run_batch, twin_hash
+
+    path = tmp_path / "error_model.json"
+    error_model.save(path)
+    small = {"batch.n_pellets": 20000, "batch.duration_h": 3.0, "fault.scenario": "window_fouling",
+             "fault.start_h": 0.5, "fault.fouling_ramp_h": 2.0}
+    plain = cfg.with_overrides(small)
+    modelled = plain.with_overrides({"measurement.error_model_path": str(path)})
+    assert twin_hash(plain) != twin_hash(modelled)
+    res = run_batch(modelled, cache=False)
+    s = res.samples
+    ok = s.accepted & (s.true_class == SINGLE)
+    early, late = ok & (s.t_s < 0.5 * 3600), ok & (s.t_s > 2.6 * 3600)
+    err = s.thickness_um - s.true_thickness_um
+    assert err[early].mean() == pytest.approx(0.3, abs=0.1)  # the model's bias
+    assert err[late].std() > 2 * err[early].std()  # its spread grows with fouling
+    scanned = s.gate_class == SINGLE
+    assert s.accepted[scanned & (s.t_s > 2.6 * 3600)].mean() < 0.75  # more undecided when fouled
+    assert res.samples.equals(run_batch(modelled, cache=False).samples)

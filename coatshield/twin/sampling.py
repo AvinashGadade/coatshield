@@ -55,12 +55,19 @@ def measure(
     true_thickness_um: np.ndarray,
     gen: np.random.Generator,
 ) -> dict[str, np.ndarray]:
-    """Placeholder gate and thickness measurement (replaced by the chain error model in Phase 8).
+    """Gate and thickness measurement of one step's objects.
 
-    Measured thickness = true thickness x n_true / n_assumed + Gaussian noise; the
-    undecided probability rises with window fouling; twins that pass the gate misread.
+    With measurement.error_model_path set, the fitted error model of the full chain is
+    used. Otherwise the placeholder: measured thickness = true thickness x n_true /
+    n_assumed + Gaussian noise; the undecided probability rises with window fouling;
+    twins that pass the gate misread.
     """
     mc = cfg.measurement
+    if mc.error_model_path:
+        from coatshield.chain.error_model import load_error_model
+
+        return load_error_model(mc.error_model_path).measure(cfg, fault.fouling, true_class,
+                                                             true_thickness_um, gen)
     n = true_class.size
     is_twin = true_class == TWIN
 
