@@ -20,14 +20,14 @@ for _var in ("NUMBA_NUM_THREADS", "OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS"):
 import numpy as np  # noqa: E402
 from _common import REPO_ROOT, file_hash  # noqa: E402
 
-from coatshield.config import Config, load_config  # noqa: E402
+from coatshield.config import Config, config_from_snapshot, load_config  # noqa: E402
 from coatshield.oct.dataset import make_scan  # noqa: E402
 
 SYNTHETIC = REPO_ROOT / "data" / "synthetic"
 
 
 def _one(index: int, config_json: str, split: str) -> dict:
-    return make_scan(Config.model_validate_json(config_json), split, index)
+    return make_scan(config_from_snapshot(config_json), split, index)
 
 
 def _memmap(path, dtype, shape, resume: bool):

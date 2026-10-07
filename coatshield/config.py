@@ -481,6 +481,17 @@ def list_presets() -> list[str]:
     return sorted(p.stem for p in PRESET_DIR.glob("*.yaml"))
 
 
+def config_from_snapshot(config_json: str) -> Config:
+    """Rebuild a config from a JSON snapshot taken when a long run started.
+
+    Sections added to the code since the snapshot was taken are filled from the files on
+    disk, so worker processes started later in the run can still read it.
+    """
+    import json
+
+    return Config.model_validate(_deep_merge(_read_yaml(DEFAULT_PATH), json.loads(config_json)))
+
+
 def load_config(
     presets: list[str] | tuple[str, ...] | str | None = None,
     overrides: dict[str, Any] | None = None,

@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from coatshield.config import FAULT_SCENARIOS, Config, load_config
+from coatshield.config import FAULT_SCENARIOS, Config, config_from_snapshot, load_config
 from coatshield.estimate.controllers import CONTROLLERS, evaluate_controllers, run_estimators
 from coatshield.twin.batch import run_batch
 
@@ -61,7 +61,7 @@ def run_case(case: dict, base_json: str | None = None) -> dict:
     base_json is the base configuration as JSON (a snapshot taken when the run started,
     so a long run is not affected by later edits to the YAML); default: the config on disk.
     """
-    base = Config.model_validate_json(base_json) if base_json else load_config()
+    base = config_from_snapshot(base_json) if base_json else load_config()
     cfg = case_config(case, base)
     result = run_batch(cfg, cache=False)
     est = run_estimators(result, cfg, bootstrap="needed")

@@ -23,6 +23,7 @@ from coatshield.config import (  # noqa: E402
     PRODUCT_PRESETS,
     SCALE_PRESETS,
     Config,
+    config_from_snapshot,
     load_config,
 )
 
@@ -54,7 +55,7 @@ def scenario_configs() -> dict[str, Config]:
 def _build(item: tuple[str, str]) -> tuple[str, str, float]:
     label, config_json = item
     start = time.perf_counter()
-    bundle = build_bundle(Config.model_validate_json(config_json), bootstrap="all")
+    bundle = build_bundle(config_from_snapshot(config_json), bootstrap="all")
     save_bundle(bundle, BUNDLES)
     return label, bundle.key, time.perf_counter() - start
 

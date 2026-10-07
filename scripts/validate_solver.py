@@ -23,7 +23,7 @@ import pandas as pd  # noqa: E402
 from _common import REPORTS_DIR  # noqa: E402
 
 from coatshield import style  # noqa: E402
-from coatshield.config import Config, load_config  # noqa: E402
+from coatshield.config import config_from_snapshot, load_config  # noqa: E402
 from coatshield.oct.generator import default_params, labels, simulate  # noqa: E402
 from coatshield.oct.preprocess import calibrated_dispersion, process  # noqa: E402
 from coatshield.seeds import rng  # noqa: E402
@@ -44,7 +44,7 @@ CAMERA_PELLETS = 2500  # pellets in one estimator window, for the fusion method
 
 
 def one_scan(job: dict) -> dict:
-    cfg = Config.model_validate_json(job["config"])
+    cfg = config_from_snapshot(job["config"])
     gen = rng(f"solver.validation.{job['seed']}", cfg.seed)
     lo, hi = cfg.oct_dataset.radius_um
     p = default_params(cfg, thickness_um=job["thickness"], n_coat=job["n_coat"],

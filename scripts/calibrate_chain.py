@@ -23,7 +23,7 @@ from _common import REPO_ROOT, REPORTS_DIR  # noqa: E402
 from coatshield.chain.error_model import fit_error_model  # noqa: E402
 from coatshield.chain.pipeline import LabelSegmenter, SampledObject, process_object  # noqa: E402
 from coatshield.compliance import confidence as conf  # noqa: E402
-from coatshield.config import Config, load_config  # noqa: E402
+from coatshield.config import Config, config_from_snapshot, load_config  # noqa: E402
 from coatshield.seeds import rng  # noqa: E402
 from coatshield.twin.population import FINES, SINGLE, TWIN  # noqa: E402
 
@@ -51,7 +51,7 @@ def sample_object(cfg: Config, index: int) -> SampledObject:
 
 
 def _init(config_json: str, segmenter: str) -> None:
-    cfg = Config.model_validate_json(config_json)
+    cfg = config_from_snapshot(config_json)
     if segmenter == "label":
         seg = LabelSegmenter(cfg)
     else:
