@@ -1,0 +1,501 @@
+{
+ "bootstrap": "all",
+ "bundle_version": "1",
+ "config": {
+  "app": {
+   "animation_frames": 48,
+   "animation_pellets": 2000,
+   "frame_every": 10,
+   "n_pellets": 200000,
+   "n_pellets_live": 50000,
+   "sample_rows": 3000
+  },
+  "batch": {
+   "duration_h": 15.0,
+   "mass_kg": 30.0,
+   "n_pellets": 200000,
+   "spray_efficiency": 0.95,
+   "spray_solids_g_per_min": null,
+   "step_s": 60.0,
+   "target_mean_um": 20.0
+  },
+  "camera": {
+   "size_noise_um": 5.5
+  },
+  "chain": {
+   "calibration_objects": 4000,
+   "confidence_min": 0.25,
+   "fines_share": 0.05,
+   "fit_residual_scale_um": 1.5,
+   "fouling_edges": [
+    0.0,
+    0.2,
+    0.4,
+    0.6,
+    0.8,
+    1.0
+   ],
+   "gallery_per_scenario": 200,
+   "intra_cv_scale": 0.3,
+   "max_error_share": 0.01,
+   "max_error_um": 2.0,
+   "min_cell_count": 15,
+   "operating_pigment": 0.05,
+   "operating_snr_db": 35.0,
+   "snr_edges": [
+    15.0,
+    25.0,
+    35.0,
+    45.0
+   ],
+   "thickness_edges": [
+    2.0,
+    6.0,
+    12.0,
+    20.0,
+    40.0
+   ],
+   "twin_share": 0.1
+  },
+  "coating": {
+   "density_g_cm3": 1.2,
+   "n": 1.47
+  },
+  "compliance": {
+   "meanings": [
+    "approve_stop",
+    "reject_recommendation",
+    "acknowledge_alarm",
+    "confirm_setpoint"
+   ],
+   "pin_iterations": 100000,
+   "reason_codes": [
+    "target_reached",
+    "process_fault",
+    "quality_hold",
+    "maintenance",
+    "other"
+   ],
+   "users": [
+    {
+     "name": "operator1",
+     "pin_hash": "89e33f83e0f299b7a0e128cc3671704d5d1816b3a6797494a888937f2956e122",
+     "role": "operator"
+    },
+    {
+     "name": "qa1",
+     "pin_hash": "325225f7daf3104b118ed2c11209495f20e4d785ce747c0f6d558cb6be78cb14",
+     "role": "quality"
+    }
+   ]
+  },
+  "controller": {
+   "cv_target": 0.3,
+   "min_objects": 500,
+   "p_d10_min": 0.95,
+   "undecided_limit": 0.2
+  },
+  "core": {
+   "n": 1.54
+  },
+  "diagnosis": {
+   "agglomerate_high_pct": 3.0,
+   "baseline_h": 1.0,
+   "fines_high_factor": 3.0,
+   "growth_low_factor": 0.85,
+   "size_shift_um": 30.0,
+   "spread_from_h": 4.0,
+   "spread_high_factor": 1.6,
+   "spread_reference_ratio": 1.2,
+   "undecided_high": 0.2,
+   "window_min": 60.0
+  },
+  "dissolution": {
+   "t63_min": [
+    30.0,
+    50.0,
+    70.0
+   ],
+   "thickness_um": [
+    9.8,
+    13.2,
+    16.1
+   ]
+  },
+  "drift": {
+   "ewma_lambda": 0.02,
+   "exceed_alarm": 0.2,
+   "exceed_warning": 0.05,
+   "min_baseline_scans": 50,
+   "reflector_alarm_db": 3.0,
+   "reflector_warning_db": 1.5,
+   "t2_confidence": 0.99,
+   "undecided_alarm": 0.2,
+   "undecided_warning": 0.1
+  },
+  "estimator": {
+   "atline_n": 10000,
+   "bootstrap_n": 200,
+   "deconvolve_noise": true,
+   "growth_shift": true,
+   "growth_window_min": 30.0,
+   "interval": 0.9,
+   "method": "hybrid",
+   "min_bin_count": 20,
+   "n_size_bins": 30,
+   "quantile_tol_um": 0.001,
+   "reference": "atline",
+   "weight_trim_percentile": 99.0,
+   "window_min": 5.0
+  },
+  "fault": {
+   "fouling_ramp_h": 4.0,
+   "maldistribution_rsd": 0.6,
+   "nozzle_block_factor": 0.7,
+   "over_wetting_fusion_factor": 10.0,
+   "over_wetting_growth_factor": 0.9,
+   "scenario": "window_fouling",
+   "spray_drying_efficiency_factor": 0.7,
+   "spray_drying_fines_factor": 10.0,
+   "start_h": 2.0,
+   "substrate_shift_um": 67.0
+  },
+  "gate": {
+   "twin_recall_target": 0.95
+  },
+  "gate_vision": {
+   "blur_px": 1.5,
+   "cnn_batch_size": 64,
+   "cnn_channels": [
+    32,
+    64,
+    128,
+    256
+   ],
+   "cnn_epochs": 20,
+   "cnn_lr": 0.001,
+   "confidence_scale": 0.03,
+   "contrast_min": 0.6,
+   "defect_grid": [
+    0.04,
+    0.06,
+    0.08,
+    0.1,
+    0.14,
+    0.18
+   ],
+   "defect_max": 0.04,
+   "defocus_px": [
+    4.0,
+    9.0
+   ],
+   "diameter_um": [
+    200.0,
+    800.0
+   ],
+   "ece_bins": 10,
+   "ellipticity": 0.06,
+   "empty_level": 0.12,
+   "false_twin_max": 0.02,
+   "fines_max_um": 150.0,
+   "fines_um": [
+    20.0,
+    100.0
+   ],
+   "frame_px": 256,
+   "haze_level": [
+    0.25,
+    0.5
+   ],
+   "interior_level": 0.12,
+   "min_area_px": 12,
+   "motion_blur_px": 2.0,
+   "n_images": 30000,
+   "n_test": 2400,
+   "n_tune": 2400,
+   "noise": 0.02,
+   "pixel_um": 5.5,
+   "rim_level": 0.85,
+   "rim_px": 2.0,
+   "sharpness_min": 0.12,
+   "single_confidence_min": 0.5,
+   "solidity_grid": [
+    0.9,
+    0.92,
+    0.94,
+    0.95,
+    0.96,
+    0.97,
+    0.98
+   ],
+   "solidity_min": 0.9,
+   "texture": 0.04,
+   "touching_neck_max": 0.7,
+   "twin_leak_max": 0.01,
+   "twin_overlap": [
+    0.05,
+    0.4
+   ],
+   "twin_recall_min": 0.95
+  },
+  "measurement": {
+   "error_model_path": null,
+   "n_assumed": 1.48,
+   "sigma_um": 1.0,
+   "twin_misread_model": "random",
+   "twin_misread_random": [
+    0.4,
+    1.9
+   ],
+   "twin_misread_thick": 1.4,
+   "twin_misread_thin": 0.45,
+   "undecided_base": 0.02,
+   "undecided_fouled": 0.6
+  },
+  "oct": {
+   "ascan_rate_hz": 250000.0,
+   "average_ascans": 3,
+   "center_nm": 830.0,
+   "coating_atten_per_mm": 2.0,
+   "coating_scatter_amp": 0.004,
+   "coating_scatter_per_um2": 0.02,
+   "core_atten_per_mm": 8.0,
+   "core_scatter_amp": 0.03,
+   "core_scatter_per_um2": 0.35,
+   "crop_margin_px": 40,
+   "db_range": [
+    -5.0,
+    55.0
+   ],
+   "depth_pixels": 512,
+   "detect_snr_db": 12.0,
+   "dispersion_rad": [
+    6.0,
+    2.0
+   ],
+   "exposure_duty": 0.5,
+   "falloff_deg": 14.0,
+   "field_um": 512.0,
+   "fouling_transmission": 0.25,
+   "fwhm_nm": 200.0,
+   "haze_scatter_amp": 0.01,
+   "haze_scatter_per_um2": 0.4,
+   "haze_thickness_um": 20.0,
+   "lateral_spot_um": 18.0,
+   "max_raw_ascans": 512,
+   "n_pixels": 2048,
+   "out_ascans": 128,
+   "pigment_atten_per_mm": 90.0,
+   "pigment_scatter_amp": 0.014,
+   "pigment_scatter_per_um2": 0.5,
+   "reference_reflectance": 0.04,
+   "reflector_reflectance": 0.002,
+   "reflector_um": 60.0,
+   "scatter_depth_um": 160.0,
+   "snr_db": 35.0,
+   "span_nm": 440.0,
+   "standoff_um": [
+    150.0,
+    350.0
+   ],
+   "valid_snr_db": 6.0,
+   "window": "hann",
+   "window_face_reflectance": 0.0005,
+   "window_face_um": 30.0,
+   "zero_pad": 2
+  },
+  "oct_dataset": {
+   "fouling_beta": [
+    1.0,
+    6.0
+   ],
+   "n_coat": [
+    1.3,
+    1.6
+   ],
+   "n_core": [
+    1.5,
+    1.58
+   ],
+   "n_locked": 2000,
+   "n_train": 10000,
+   "n_val": 1000,
+   "pigment_high": [
+    0.5,
+    1.0
+   ],
+   "pigment_high_share": 0.2,
+   "pigment_low": [
+    0.0,
+    0.15
+   ],
+   "radius_um": [
+    125.0,
+    750.0
+   ],
+   "seed_offsets": {
+    "locked": 2000000,
+    "train": 0,
+    "val": 1000000
+   },
+   "snr_db": [
+    15.0,
+    45.0
+   ],
+   "speed_m_s": [
+    0.05,
+    0.5
+   ],
+   "thickness_um": [
+    2.0,
+    40.0
+   ]
+  },
+  "pellet": {
+   "core_density_g_cm3": 1.5,
+   "core_median_um": 700.0,
+   "size_sigma_log": 0.18
+  },
+  "seed": 20261006,
+  "seg": {
+   "aug_gain": [
+    0.8,
+    1.25
+   ],
+   "aug_gamma": [
+    0.8,
+    1.25
+   ],
+   "aug_shift_px": 12,
+   "aug_speckle": 0.08,
+   "batch_size": 16,
+   "dice_weight": 1.0,
+   "dp_max_jump_px": 3,
+   "dp_min_gap_px": 1,
+   "encoder_lr_factor": 0.1,
+   "eval_min_snr_db": 25.0,
+   "finetune_epochs": 30,
+   "finetune_lr": 0.0003,
+   "lr": 0.001,
+   "oct5k_crop": [
+    512,
+    256
+   ],
+   "oct5k_test_volumes": 0.15,
+   "oct5k_val_volumes": 0.15,
+   "pretrain_epochs": 60,
+   "separable_min_px": 2.0,
+   "synthetic_crop": [
+    448,
+    128
+   ],
+   "valid_min_prob": 0.5,
+   "weight_decay": 0.0001,
+   "widths": [
+    16,
+    32,
+    64,
+    128,
+    256
+   ]
+  },
+  "solve": {
+   "anchor_pellets": 30,
+   "apex_angle_deg": 2.0,
+   "assumed_n": 1.5,
+   "core_branch": "below",
+   "max_angle_deg": 20.0,
+   "microscopy_sigma_um": 0.5,
+   "min_ascans": 5,
+   "search_px": 4
+  },
+  "spec": {
+   "d10_min_um": 15.0
+  },
+  "twin": {
+   "pass_classes": 64,
+   "pass_tail": 1e-10,
+   "rng_chunks": 16,
+   "size_hist_bins": 400,
+   "size_hist_range": [
+    0.3,
+    3.0
+   ],
+   "stats_subsample": 50000,
+   "thickness_hist_bins": 250,
+   "thickness_hist_max_factor": 2.5
+  },
+  "validation": {
+   "eval_from_h": 2.0,
+   "fault_seeds": 20,
+   "gamma_grid": [
+    0.0,
+    0.5
+   ],
+   "k_grid": [
+    0.0,
+    0.5,
+    1.0,
+    1.5
+   ],
+   "m_grid": [
+    0.0,
+    1.0,
+    2.0,
+    3.0,
+    4.0
+   ],
+   "n_pellets": 100000,
+   "n_seeds": 50,
+   "quick_k_grid": [
+    0.0,
+    1.0
+   ],
+   "quick_m_grid": [
+    0.0,
+    3.0
+   ],
+   "quick_n_seeds": 4
+  },
+  "web": {
+   "n_pellets": 50000,
+   "smooth_steps": 3,
+   "step_s": 300.0
+  },
+  "window": {
+   "hidden_selection_gamma": 0.0,
+   "objects_per_min": 500.0,
+   "size_bias_m": 3.0
+  },
+  "wurster": {
+   "cycle_size_exponent_b": 0.5,
+   "cycle_time_rsd": 0.35,
+   "cycle_time_s": 5.8,
+   "deposit_nm_per_pass": 3.0,
+   "fines_per_min": 5.0,
+   "fines_size_um": [
+    20.0,
+    100.0
+   ],
+   "fusion_rate_per_h": 0.002,
+   "growth_ratio_target": [
+    1.08,
+    1.81
+   ],
+   "size_growth_exponent_k": 1.0
+  }
+ },
+ "config_hash": "746b6cf04f49",
+ "core_median_um": 700.0,
+ "n_pellets": 200000,
+ "n_real": 96062224.96191086,
+ "stop_steps": {
+  "C0": 739,
+  "C1": 656,
+  "C2": 633,
+  "C3": null
+ },
+ "target_solids_g": 4583.016725487188,
+ "target_weight_gain_pct": 14.512886297376093,
+ "twin_hash": "c0fb3c3c593e"
+}

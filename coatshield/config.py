@@ -33,7 +33,8 @@ FAULT_SCENARIOS = (
 # sections for later modules are added.
 BATCH_SECTIONS = ("seed", "pellet", "coating", "core", "batch", "wurster", "twin", "window",
                   "camera", "spec", "measurement", "gate", "fault")
-ANALYSIS_SECTIONS = BATCH_SECTIONS + ("estimator", "controller", "diagnosis", "validation")
+# Diagnosis thresholds are not part of it: validation never reads them.
+ANALYSIS_SECTIONS = BATCH_SECTIONS + ("estimator", "controller", "validation")
 
 
 class _Section(BaseModel):

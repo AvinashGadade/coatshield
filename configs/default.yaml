@@ -151,7 +151,7 @@ diagnosis:
   growth_low_factor: 0.85         # Assumption: growth below 85% of the recipe rate counts as low
   agglomerate_high_pct: 3.0       # Assumption: gate twin share above 3% of pellets counts as high
   fines_high_factor: 3.0          # Assumption: fines rate above 3x its first-hour level counts as high
-  spread_high_factor: 1.15        # Assumption: size-adjusted spread above 1.15x the healthy level counts as high
+  spread_high_factor: 1.6         # Set above every healthy precomputed scenario (they reach 1.4): at 1 um noise the window cannot tell maldistribution (1.2-1.5) from a healthy batch
   spread_reference_ratio: 1.2     # Calibrated: healthy batches read 1.2x the predicted level through this estimator (seeds 1-3)
   spread_from_h: 4.0              # Assumption: the spread signal is used only once the coat is thick enough to resolve it
   undecided_high: 0.20            # Assumption: undecided share above 20% points to window fouling

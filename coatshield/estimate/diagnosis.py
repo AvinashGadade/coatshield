@@ -39,7 +39,9 @@ RULES = (
          "Check the spray rate against the pump setpoint; inspect and clean the nozzle."),
     Rule("maldistribution", "Maldistribution",
          "Size-adjusted spread above the sqrt(1/t) expectation, agglomerates normal",
-         "Check the partition gap, fluidising air and distributor plate for uneven circulation."),
+         "Check the partition gap, fluidising air and distributor plate for uneven circulation. "
+         "(At 1 um measurement noise this signature is too weak to separate from a healthy "
+         "batch, so the rule's limit is set where it does not fire on healthy batches.)"),
     Rule("window_fouling", "Window fouling",
          "Undecided share high",
          "Purge or clean the measurement window; hold stop decisions until the share recovers."),

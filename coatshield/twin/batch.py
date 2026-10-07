@@ -37,8 +37,18 @@ class BatchResult:
 
 
 def _quantiles(x: np.ndarray, n: int, qs: tuple[float, ...]) -> list[float]:
-    """Nearest-rank quantiles of the n smallest-ranked entries (one partial sort per quantile)."""
-    return [float(np.partition(x, k)[k]) for k in (min(n - 1, int(q * n)) for q in qs)]
+    """Nearest-rank quantiles (ascending qs) of the n smallest-ranked entries.
+
+    One copy, partitioned in place: after each split only the part above it is touched.
+    """
+    part = x.copy()
+    out, start = [], 0
+    for k in (min(n - 1, int(q * n)) for q in qs):
+        view = part[start:]
+        view.partition(k - start)
+        out.append(float(view[k - start]))
+        start = k + 1
+    return out
 
 
 def _dot(a: np.ndarray, b: np.ndarray) -> float:
@@ -69,8 +79,10 @@ def _truth_row(pop: Population, coated: np.ndarray, cfg: Config, sub: _Subsample
     h_other = h_all[other]
     mean = float((h_all.sum() - h_other.sum()) / n_single)
     var = float((_dot(h_all, h_all) - _dot(h_other, h_other)) / n_single - mean * mean)
-    h = h_all.copy() if other.size else h_all
-    h[other] = np.inf
+    h = h_all
+    if other.size:
+        h = h_all.copy()
+        h[other] = np.inf
     d10, d50, d90 = _quantiles(h, n_single, (0.1, 0.5, 0.9))
 
     # Size trend h ~ D^k and the spread left once it is removed, on a fixed subsample.

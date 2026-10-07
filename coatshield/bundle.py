@@ -49,7 +49,7 @@ class Bundle:
 
 def bundle_key(cfg: Config) -> str:
     """Hash of everything a bundle depends on: the analysed batch and the app's settings."""
-    return cfg.hash(include=ANALYSIS_SECTIONS + ("app",))
+    return cfg.hash(include=ANALYSIS_SECTIONS + ("diagnosis", "app"))
 
 
 def _shares(counts: np.ndarray) -> np.ndarray:
