@@ -240,6 +240,17 @@ compliance:
     - {name: operator1, role: operator, pin_hash: 89e33f83e0f299b7a0e128cc3671704d5d1816b3a6797494a888937f2956e122}
     - {name: qa1, role: quality, pin_hash: 325225f7daf3104b118ed2c11209495f20e4d785ce747c0f6d558cb6be78cb14}
 
+chain:
+  fit_residual_scale_um: 1.5      # Assumption: circle-fit residual at which fit confidence falls to 37%
+  intra_cv_scale: 0.30            # Assumption: spread of thickness across A-scans at which it falls to 37%
+  confidence_min: 0.25            # Tuned by scripts/calibrate_chain.py: below this a pellet is "undecided"
+  max_error_um: 2.0               # Build guide: at most 1% of accepted pellets may be off by more than this
+  max_error_share: 0.01           # Build guide
+  calibration_objects: 4000       # Build guide: 3,000-5,000 objects through the full chain
+  gallery_per_scenario: 200       # Build guide: about 200 processed objects per scenario
+  twin_share: 0.10                # Assumption: share of twins in the calibration mix
+  fines_share: 0.05               # Assumption: share of fines in the calibration mix
+
 seg:
   widths: [16, 32, 64, 128, 256]  # Build guide: compact 4-level U-Net, about 2 M parameters
   pretrain_epochs: 60             # Build guide

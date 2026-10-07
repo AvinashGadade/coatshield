@@ -304,6 +304,18 @@ class ComplianceCfg(_Section):
     users: tuple[UserCfg, ...]
 
 
+class ChainCfg(_Section):
+    fit_residual_scale_um: float = Field(gt=0)
+    intra_cv_scale: float = Field(gt=0)
+    confidence_min: float = Field(ge=0, le=1)
+    max_error_um: float = Field(gt=0)
+    max_error_share: float = Field(gt=0, lt=1)
+    calibration_objects: int = Field(gt=0)
+    gallery_per_scenario: int = Field(gt=0)
+    twin_share: float = Field(ge=0, lt=1)
+    fines_share: float = Field(ge=0, lt=1)
+
+
 class SegCfg(_Section):
     widths: tuple[int, ...]
     pretrain_epochs: int = Field(gt=0)
@@ -380,6 +392,7 @@ class Config(_Section):
     web: WebCfg
     dissolution: DissolutionCfg
     oct: OctCfg
+    chain: ChainCfg
     compliance: ComplianceCfg
     seg: SegCfg
     solve: SolveCfg

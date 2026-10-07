@@ -53,13 +53,19 @@ def _motion_blur(image, length_px, angle):
     return cv2.filter2D(image, -1, kernel / kernel.sum())
 
 
-def render(label: int, cfg: Config, gen: np.random.Generator) -> tuple[np.ndarray, dict]:
-    """One image [frame, frame] uint8 of the given class, and what was drawn."""
+def render(label: int, cfg: Config, gen: np.random.Generator,
+           diameter_um: float | None = None) -> tuple[np.ndarray, dict]:
+    """One image [frame, frame] uint8 of the given class, and what was drawn.
+
+    diameter_um fixes the pellet size (the chain renders the object the twin sampled);
+    by default it is drawn from gate_vision.diameter_um.
+    """
     gv = cfg.gate_vision
     n = gv.frame_px
     yy, xx = np.mgrid[0:n, 0:n].astype(np.float32)
     centre = n / 2.0
-    radius = gen.uniform(*gv.diameter_um) / gv.pixel_um / 2.0
+    drawn = gen.uniform(*gv.diameter_um)  # always drawn, so the stream does not shift
+    radius = (drawn if diameter_um is None else diameter_um) / gv.pixel_um / 2.0
     info: dict = {"label": int(label), "class": CLASSES[label]}
 
     def one_disc(cx, cy, r):
