@@ -268,9 +268,22 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--quick", action="store_true", help="reduced grid, a few minutes")
     parser.add_argument("--workers", type=int, default=os.cpu_count() or 1)
+    parser.add_argument("--error-model", default=None,
+                        help="path of a fitted chain error model (Phase 8 rerun), relative to "
+                             "the repository; replaces the placeholder measurement")
     args = parser.parse_args()
 
     cfg = load_config()
+    if args.error_model:
+        from coatshield.chain.error_model import load_error_model
+
+        model = load_error_model(args.error_model)
+        # The estimator is told the chain's own noise at the operating point.
+        cfg = cfg.with_overrides({
+            "measurement.error_model_path": args.error_model,
+            "measurement.sigma_um": model.operating_spread_um(cfg.batch.target_mean_um)})
+        print(f"error model {args.error_model} sha256 {model.sha256()[:12]}, estimator noise "
+              f"{cfg.measurement.sigma_um:.2f} um")
     tag = cfg.analysis_hash() + ("-quick" if args.quick else "")
     REPORTS_DIR.mkdir(exist_ok=True)
     style.apply_matplotlib()
@@ -294,8 +307,13 @@ def main() -> None:
     plot_heatmap(cells, spec, tag, REPORTS_DIR / f"heatmap_raw_d10_m_k_{tag}.png")
     plot_fault_bars(faults, tag, REPORTS_DIR / f"controllers_by_scenario_{tag}.png")
     plot_gamma_panel(cells, spec, tag, REPORTS_DIR / f"gamma_panel_{tag}.png")
-    print(write_summary(cells, faults, cfg, tag, REPORTS_DIR / f"validation_summary_{tag}.md",
-                        args.quick, len(grid), len(faults_raw)))
+    text = write_summary(cells, faults, cfg, tag, REPORTS_DIR / f"validation_summary_{tag}.md",
+                         args.quick, len(grid), len(faults_raw))
+    if args.error_model:
+        text += (f"\nMeasurement: fitted chain error model `{args.error_model}` "
+                 f"(estimator noise {cfg.measurement.sigma_um:.2f} um), not the placeholder.\n")
+        (REPORTS_DIR / f"validation_summary_{tag}.md").write_text(text)
+    print(text)
 
 
 if __name__ == "__main__":

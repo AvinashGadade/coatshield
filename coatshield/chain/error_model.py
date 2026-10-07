@@ -85,6 +85,11 @@ class ErrorModel:
         return {"thickness_um": thickness, "gate_class": gate_class, "accepted": accepted,
                 "confidence": confidence}
 
+    def operating_spread_um(self, thickness_um: float) -> float:
+        """Spread of a reading in a normal batch (clean window, operating SNR): the
+        measurement noise the estimator should assume when this model is in use."""
+        return float(self.bias_spread(0.0, self.operating_point["snr_db"], thickness_um)[1])
+
     # --- storage -----------------------------------------------------------------
     def to_dict(self) -> dict:
         return json.loads(json.dumps(asdict(self)))

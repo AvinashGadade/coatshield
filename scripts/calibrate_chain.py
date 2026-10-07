@@ -81,17 +81,22 @@ def main() -> None:
     with get_context("spawn").Pool(args.workers, initializer=_init,
                                    initargs=(cfg.model_dump_json(), args.segmenter)) as pool:
         rows = pd.DataFrame(pool.map(_one, range(n), chunksize=16))
-    suffix = "" if args.segmenter == "onnx" else "_dryrun"
-    rows.to_csv(REPORTS_DIR / f"chain_calibration{suffix}_{tag}.csv", index=False)
-
-    model = fit_error_model(rows, cfg, {"segmenter": args.segmenter, "config_hash": tag})
-    path = MODELS / f"error_model{suffix}.json"
-    digest = model.save(path)
-
+    # Tune the undecided threshold first, then fit the error model with that threshold in
+    # force, so the tables describe the readings that will actually be accepted.
     scanned = rows[(rows.true_true_class == SINGLE) & (rows.status != "gated")
                    & rows.thickness_um.notna()]
     tuned = conf.tune_threshold(scanned.confidence.to_numpy(),
                                 np.abs(scanned.error_um.to_numpy()), cfg)
+    has_reading = rows.thickness_um.notna() & (rows.status != "gated")
+    rows.loc[has_reading, "status"] = np.where(
+        rows.loc[has_reading, "confidence"] >= tuned["confidence_min"], "measured", "undecided")
+    suffix = "" if args.segmenter == "onnx" else "_dryrun"
+    rows.to_csv(REPORTS_DIR / f"chain_calibration{suffix}_{tag}.csv", index=False)
+    model = fit_error_model(rows, cfg, {"segmenter": args.segmenter, "config_hash": tag,
+                                        "confidence_min": tuned["confidence_min"]})
+    path = MODELS / f"error_model{suffix}.json"
+    digest = model.save(path)
+
     measured = rows[(rows.status == "measured") & (rows.true_true_class == SINGLE)]
     clean = measured[(measured.true_fouling < 0.2) & (measured.true_snr_db >= 25)]
 

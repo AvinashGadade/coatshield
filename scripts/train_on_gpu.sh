@@ -8,6 +8,8 @@
 # It creates a Python environment, unpacks the data, pretrains on OCT5k, fine-tunes on the
 # synthetic pellets, trains from scratch for comparison, evaluates, exports ONNX and writes
 # coatshield_models.zip next to the zips. Safe to run again: finished steps are skipped.
+# With FULL=1 it also calibrates the measurement chain and reruns the validation grid with
+# the fitted error model (CPU work; set CPUS to the number of cores you may use).
 set -euo pipefail
 
 ZIPS="${1:?usage: bash scripts/train_on_gpu.sh /path/to/folder/with/the/zips}"
@@ -65,6 +67,16 @@ echo "== 5/6 Same network from scratch";      run_stage scratch  unet_pellets_sc
 echo "== 6/6 Evaluate, export ONNX, pack the results"
 .venv/bin/python scripts/evaluate_seg.py
 .venv/bin/python scripts/export_onnx.py --checkpoint unet_pellets --name unet
+
+# Optional CPU steps (no GPU needed), switched on with FULL=1: calibrate the measurement
+# chain with the trained model, then rerun the validation grid with the fitted error model.
+if [ "${FULL:-0}" = "1" ]; then
+  echo "== extra 1/2 Chain calibration"
+  [ -f models/error_model.json ] || .venv/bin/python scripts/calibrate_chain.py --workers "${CPUS:-$(nproc)}"
+  echo "== extra 2/2 Validation grid with the chain error model (resumes if interrupted)"
+  .venv/bin/python scripts/run_validation.py --error-model models/error_model.json \
+    --workers "${CPUS:-$(nproc)}" 2>&1 | tee reports/validation_error_model.log
+fi
 rm -f "$ZIPS/coatshield_models.zip"
-zip -q -r "$ZIPS/coatshield_models.zip" models reports/seg_* reports/train_*.log
+zip -q -r "$ZIPS/coatshield_models.zip" models reports -x "reports/.progress/*"
 echo "Done. Copy $ZIPS/coatshield_models.zip back to the laptop."
