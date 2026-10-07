@@ -1,6 +1,6 @@
 # Validation summary (full run)
 
-Config hash `db3aeeba7626` (diagnosis settings are not part of this hash; the runs were made under the earlier tag 1cf9e246611c with identical settings) · 2000 grid batches and 140 fault batches at 100,000 pellets · spec d10 >= 12 um
+Config hash `db3aeeba7626` · 2000 grid batches and 140 fault batches at 100,000 pellets · spec d10 >= 12 um
 
 ## Headline (window bias m = 3, size-growth exponent k = 1, no hidden selection)
 
