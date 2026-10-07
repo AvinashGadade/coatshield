@@ -257,6 +257,17 @@ chain:
   operating_snr_db: 35.0          # Assumption: surface SNR of the scans in a normal batch
   operating_pigment: 0.05         # Assumption: pigment level of the product in a normal batch
 
+drift:
+  t2_confidence: 0.99             # Build guide: Hotelling T2 with a 99% control limit
+  ewma_lambda: 0.02               # Assumption: weight of the newest scan; small enough that one stray scan cannot raise a warning
+  exceed_warning: 0.05            # Assumption: share of scans beyond the T2 limit that raises a warning (1% expected)
+  exceed_alarm: 0.20              # Assumption: share that raises an alarm
+  undecided_warning: 0.10         # Assumption: EWMA of the undecided rate that raises a warning
+  undecided_alarm: 0.20           # Assumption: and an alarm (the controller's own limit)
+  reflector_warning_db: 1.5       # Assumption: drop of the reference reflector that raises a warning
+  reflector_alarm_db: 3.0         # Assumption: and an alarm (half the amplitude lost in the window)
+  min_baseline_scans: 50          # Assumption: fewest clean scans needed to set a baseline
+
 seg:
   widths: [16, 32, 64, 128, 256]  # Build guide: compact 4-level U-Net, about 2 M parameters
   pretrain_epochs: 60             # Build guide

@@ -322,6 +322,18 @@ class ChainCfg(_Section):
     operating_pigment: float = Field(ge=0, le=1)
 
 
+class DriftCfg(_Section):
+    t2_confidence: float = Field(gt=0, lt=1)
+    ewma_lambda: float = Field(gt=0, le=1)
+    exceed_warning: float = Field(gt=0, lt=1)
+    exceed_alarm: float = Field(gt=0, lt=1)
+    undecided_warning: float = Field(gt=0, lt=1)
+    undecided_alarm: float = Field(gt=0, lt=1)
+    reflector_warning_db: float = Field(gt=0)
+    reflector_alarm_db: float = Field(gt=0)
+    min_baseline_scans: int = Field(gt=2)
+
+
 class SegCfg(_Section):
     widths: tuple[int, ...]
     pretrain_epochs: int = Field(gt=0)
@@ -398,6 +410,7 @@ class Config(_Section):
     web: WebCfg
     dissolution: DissolutionCfg
     oct: OctCfg
+    drift: DriftCfg
     chain: ChainCfg
     compliance: ComplianceCfg
     seg: SegCfg
