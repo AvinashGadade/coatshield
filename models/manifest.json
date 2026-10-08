@@ -1,0 +1,30 @@
+{
+ "models": {
+  "unet": {
+   "date_utc": "2026-10-08T05:14:32+00:00",
+   "file": "unet.onnx",
+   "git_commit": "5fb7a6b2553bc0acd8c2018f48235216753c56eb",
+   "max_abs_diff_vs_pytorch": 1.2159347534179688e-05,
+   "metrics": {
+    "dice_coating": 0.9639,
+    "inner_mae_px": 3.741,
+    "inner_mae_px_clear_good_snr": 1.061,
+    "inner_median_px_clear_good_snr": 0.725,
+    "outer_mae_px": 0.545,
+    "outer_mae_px_clear_good_snr": 0.542,
+    "source": "seg_scans_unet_pellets_scratch_5fff92e557f9.csv",
+    "validation_scans": 1000
+   },
+   "opset": 17,
+   "parameters": 2160163,
+   "sha256": "2abe0b6b30a76bca08f29f1373c6fd342d8d93656b09d3cc727cae563b51b947",
+   "stage": "scratch",
+   "status": "candidate",
+   "training_data_sha256": {
+    "train": "f4c70582ad6a5b55efaa9c7d01ebbb1d6ff408fdcd5a22e80144dd329df590bb",
+    "val": "9b8a56f5955940d28941a09d1e24059751f11e65f0e76469ca51fe592059e1c8"
+   },
+   "version": "0.1.0"
+  }
+ }
+}

@@ -18,7 +18,7 @@ from _common import REPO_ROOT, REPORTS_DIR
 from coatshield.compliance.registry import load_manifest, verified_path
 from coatshield.config import load_config
 from coatshield.seg.infer import Segmenter
-from coatshield.seg.metrics import boundary_error, thinnest_separable
+from coatshield.seg.metrics import boundary_error, surfaces_separate, thinnest_separable
 
 LOCKED = REPO_ROOT / "data" / "test_locked"
 FINAL = REPORTS_DIR / "final"
@@ -48,9 +48,9 @@ def main() -> None:
         n = boundary_error(found["inner"], labels["inner_px"][i], valid)
         outer_err.append(o["mae_px"])
         inner_err.append(n["mae_px"])
-        gap = np.median((found["inner"] - found["outer"])[valid]) if valid.any() else 0.0
-        separated.append(bool(valid.any() and gap >= cfg.seg.separable_min_px
-                              and o["mae_px"] <= 2.0 and n["mae_px"] <= 2.0))
+        separated.append(surfaces_separate(found["outer"], found["inner"], labels["outer_px"][i],
+                                           labels["inner_px"][i], valid, cfg.seg.separable_min_px,
+                                           cfg.seg.separable_tolerance))
     snr = np.array([p["snr_db"] for p in params])
     good = snr >= cfg.seg.eval_min_snr_db
     result = {

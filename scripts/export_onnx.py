@@ -41,6 +41,28 @@ def update_manifest(name: str, entry: dict) -> None:
     MANIFEST.write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
 
 
+def evaluation_metrics(checkpoint: str, cfg) -> dict:
+    """Headline numbers from the latest scripts/evaluate_seg.py table for this checkpoint."""
+    import pandas as pd
+
+    tables = sorted((REPO_ROOT / "reports").glob(f"seg_scans_{checkpoint}_*.csv"),
+                    key=lambda p: p.stat().st_mtime)
+    if not tables:
+        return {"note": "run scripts/evaluate_seg.py to fill the metrics"}
+    t = pd.read_csv(tables[-1])
+    clear = t[(t.snr_db >= cfg.seg.eval_min_snr_db) & (t.pigment <= cfg.oct_dataset.pigment_low[1])]
+    return {
+        "source": tables[-1].name,
+        "validation_scans": int(len(t)),
+        "outer_mae_px": round(float(t.outer_mae_px.mean()), 3),
+        "inner_mae_px": round(float(t.inner_mae_px.mean()), 3),
+        "outer_mae_px_clear_good_snr": round(float(clear.outer_mae_px.mean()), 3),
+        "inner_mae_px_clear_good_snr": round(float(clear.inner_mae_px.mean()), 3),
+        "inner_median_px_clear_good_snr": round(float(clear.inner_mae_px.median()), 3),
+        "dice_coating": round(float(t.dice_coating.mean()), 4),
+    }
+
+
 def _git_commit() -> str:
     try:
         return subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
@@ -73,7 +95,7 @@ def main() -> None:
         "parameters": info["parameters"],
         "opset": OPSET,
         "max_abs_diff_vs_pytorch": diff,
-        "metrics": {k: info[k] for k in ("val_boundaries", "test") if k in info},
+        "metrics": evaluation_metrics(args.checkpoint, cfg),
         "stage": info.get("stage"),
         "training_data_sha256": data_hashes,
         "git_commit": _git_commit(),

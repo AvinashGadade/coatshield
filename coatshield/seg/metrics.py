@@ -28,6 +28,21 @@ def dice_per_class(pred: np.ndarray, truth: np.ndarray, n_classes: int,
     return out
 
 
+def surfaces_separate(found_outer, found_inner, true_outer, true_inner, valid,
+                      min_px: float, tolerance: float) -> bool:
+    """True when two surfaces are found and their gap matches the true optical thickness.
+
+    The found gap (median over valid columns) must be at least min_px and within
+    max(min_px, tolerance x true gap) of the true gap.
+    """
+    ok = valid & np.isfinite(true_outer) & np.isfinite(true_inner)
+    if not ok.any():
+        return False
+    gap = float(np.median((found_inner - found_outer)[ok]))
+    true_gap = float(np.median((true_inner - true_outer)[ok]))
+    return bool(gap >= min_px and abs(gap - true_gap) <= max(min_px, tolerance * true_gap))
+
+
 def thinnest_separable(thickness_um: np.ndarray, separated: np.ndarray, rate: float = 0.9,
                        n_bins: int = 12) -> float:
     """Thinnest film (um) from which the two surfaces separate in at least `rate` of scans.

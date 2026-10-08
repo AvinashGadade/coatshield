@@ -286,11 +286,12 @@ seg:
   aug_gamma: [0.8, 1.25]          # Assumption: random gamma
   aug_speckle: 0.08               # Assumption: std of added multiplicative speckle noise
   aug_shift_px: 12                # Assumption: "small vertical shifts"
-  dp_max_jump_px: 3               # Build guide: at most 3 pixels of jump between columns
+  dp_max_jump_px: 12              # The guide's 3 px assumed square pixels; here a 30 degree surface climbs 6 depth pixels (0.36 um) per 4 um column, so the limit is twice that
   dp_min_gap_px: 1                # Build guide: inner surface at least one pixel below the outer
-  valid_min_prob: 0.5             # Assumption: a column is valid when coating or core is this probable somewhere
+  valid_min_prob: 0.5             # Assumption: a column is valid when coating or core is this probable somewhere and both surfaces are this decisive
   eval_min_snr_db: 25.0           # Build guide: boundary error target applies at SNR >= 25 dB
   separable_min_px: 2.0           # Assumption: surfaces count as separated when found at least this far apart
+  separable_tolerance: 0.25       # Assumption: and their gap is within 25% (or that many pixels) of the true optical thickness
 
 solve:
   max_angle_deg: 20.0             # Build guide: use only A-scans below this incidence angle

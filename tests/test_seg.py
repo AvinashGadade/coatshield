@@ -268,3 +268,22 @@ def test_onnx_matches_pytorch_and_is_bit_identical_across_runs(cfg, tmp_path):
         assert seg.probabilities(scan).tobytes() == first.tobytes()
     found = seg.surfaces(scan)
     assert (found["inner"] >= found["outer"] + cfg.seg.dp_min_gap_px).all()
+
+
+def test_steep_pellet_with_empty_sides_is_followed(cfg):
+    """A sphere climbs several depth pixels per column and is flanked by empty columns;
+    the search must follow it and leave the empty columns unflagged, not be dragged off."""
+    cols = np.arange(128)
+    x = (cols - 63.5) * 4.0  # um
+    radius, px = 300.0, 0.364
+    inside = np.abs(x) < 0.55 * radius
+    sag = (radius - np.sqrt(radius**2 - np.where(inside, x, 0.0) ** 2)) / px
+    outer = np.where(inside, 40 + sag, 0).astype(int)
+    inner = outer + 45
+    assert np.abs(np.diff(outer[inside])).max() > 3  # steeper than the guide's 3 px
+    prob = probabilities(outer, inner, n_rows=512)
+    prob[:, :, ~inside] = np.array([0.98, 0.01, 0.01])[:, None, None]
+    found = run(prob, cfg)
+    assert np.array_equal(found["valid"], inside)
+    assert np.abs(found["outer"][inside] - outer[inside]).max() <= 1
+    assert np.abs(found["inner"][inside] - inner[inside]).max() <= 1

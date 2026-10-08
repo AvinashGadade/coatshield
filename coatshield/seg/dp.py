@@ -72,27 +72,36 @@ def find_surfaces(prob: np.ndarray, max_jump_px: int, min_gap_px: int,
                   valid_min_prob: float) -> dict[str, np.ndarray]:
     """Two ordered surfaces from class probabilities [3, depth, columns].
 
-    Returns outer and inner rows per column (inner >= outer + min_gap_px everywhere),
-    a valid flag per column (columns without signal are flagged, not guessed) and the
-    probability margin along each path.
+    The search runs only across the span of columns in which the network sees a pellet;
+    columns outside it, and columns where a surface is not decisive, are flagged invalid,
+    not guessed. Returns outer and inner rows per column (inner >= outer + min_gap_px
+    everywhere), the valid flag and the probability margin along each path.
     """
-    outer_cost, inner_cost = surface_costs(prob)
-    n_rows, n_cols = outer_cost.shape
-    outer = shortest_path(outer_cost, max_jump_px, np.zeros(n_cols, dtype=np.int32))
-    lower = np.minimum(outer + min_gap_px, n_rows - 1).astype(np.int32)
-    inner = shortest_path(inner_cost, max_jump_px, lower)
+    n_rows, n_cols = prob.shape[1:]
+    has_signal = (prob[1] + prob[2]).max(axis=0) >= valid_min_prob
+    outer = np.zeros(n_cols, dtype=np.int32)
+    inner = np.full(n_cols, min(min_gap_px, n_rows - 1), dtype=np.int32)
+    margin_outer, margin_inner = np.zeros(n_cols), np.zeros(n_cols)
+    valid = np.zeros(n_cols, dtype=bool)
+    seen = np.flatnonzero(has_signal)
+    if seen.size == 0:
+        return {"outer": outer, "inner": inner, "valid": valid, "margin_outer": margin_outer,
+                "margin_inner": margin_inner}
 
-    cols = np.arange(n_cols)
-    valid = (prob[1] + prob[2]).max(axis=0) >= valid_min_prob
+    span = slice(int(seen[0]), int(seen[-1]) + 1)
+    p = prob[:, :, span]
+    outer_cost, inner_cost = surface_costs(p)
+    width = p.shape[2]
+    o = shortest_path(outer_cost, max_jump_px, np.zeros(width, dtype=np.int32))
+    lower = np.minimum(o + min_gap_px, n_rows - 1).astype(np.int32)
+    i = shortest_path(inner_cost, max_jump_px, lower)
+
+    cols = np.arange(width)
     # Margin: how decisively the class changes across each surface.
-    above_o = prob[0][np.maximum(outer - 1, 0), cols]
-    below_o = (prob[1] + prob[2])[outer, cols]
-    above_i = (prob[0] + prob[1])[np.maximum(inner - 1, 0), cols]
-    below_i = prob[2][inner, cols]
-    return {
-        "outer": outer,
-        "inner": inner,
-        "valid": valid,
-        "margin_outer": np.minimum(above_o, below_o),
-        "margin_inner": np.minimum(above_i, below_i),
-    }
+    m_o = np.minimum(p[0][np.maximum(o - 1, 0), cols], (p[1] + p[2])[o, cols])
+    m_i = np.minimum((p[0] + p[1])[np.maximum(i - 1, 0), cols], p[2][i, cols])
+    outer[span], inner[span] = o, i
+    margin_outer[span], margin_inner[span] = m_o, m_i
+    valid[span] = has_signal[span] & (np.minimum(m_o, m_i) >= valid_min_prob)
+    return {"outer": outer, "inner": inner, "valid": valid, "margin_outer": margin_outer,
+            "margin_inner": margin_inner}

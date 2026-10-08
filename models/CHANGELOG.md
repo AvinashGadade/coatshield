@@ -6,7 +6,8 @@ and a new entry; the locked evaluation is run once per version by the test owner
 
 | Date | Model | Version | Change | Acceptance tests | Locked evaluation |
 | --- | --- | --- | --- | --- | --- |
-| (none yet) | | | No trained model has been registered. The gate in use is the classical, rule-based method (no weights). | | |
+| 2026-10-07 | unet | 0.1.0 | First trained boundary finder (compact U-Net, 2,160,163 parameters), trained from scratch on 10,000 synthetic pellet scans on a V100. Chosen over the OCT5k-pretrained, fine-tuned run because it scored better on every validation measure (see reports/seg_evaluation_*.md). Status: candidate. | tests/test_seg.py passed; scripts/evaluate_seg.py: outer surface 0.54 px, inner surface 1.06 px mean (0.72 median) on clear coats at SNR >= 25 dB, thinnest separable film 2.0 um; ONNX matches PyTorch to 1.2e-5 | Not run yet (owner only) |
+| | gate | - | No trained gate. The gate in use is the classical, rule-based method (no weights). | scripts/tune_gate.py | - |
 
 ## Acceptance tests per model
 

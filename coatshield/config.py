@@ -358,6 +358,7 @@ class SegCfg(_Section):
     valid_min_prob: float = Field(gt=0, lt=1)
     eval_min_snr_db: float
     separable_min_px: float = Field(gt=0)
+    separable_tolerance: float = Field(gt=0)
 
 
 class SolveCfg(_Section):
