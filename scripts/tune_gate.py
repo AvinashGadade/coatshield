@@ -82,7 +82,10 @@ def main() -> None:
     ]
     text = "\n".join(lines)
     (REPORTS_DIR / f"gate_comparison_{tag}.md").write_text(text)
-    pd.DataFrame([{"method": "classical", **summary, **tuned}]).to_csv(
+    on_tuning_set = {f"tuning_{k}": v for k, v in tuned.items()
+                     if k in ("twin_recall", "false_twin_rate")}
+    thresholds = {k: tuned[k] for k in ("solidity_min", "defect_max")}
+    pd.DataFrame([{"method": "classical", **summary, **thresholds, **on_tuning_set}]).to_csv(
         REPORTS_DIR / f"gate_comparison_{tag}.csv", index=False)
     print(text)
 

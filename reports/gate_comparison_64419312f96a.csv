@@ -1,0 +1,2 @@
+method,accuracy,twin_recall,twin_leak,false_twin_rate,single_pass_rate,non_single_leak,ece,cpu_ms_per_image,solidity_min,defect_max,tuning_twin_recall,tuning_false_twin_rate
+classical,0.9454166666666667,1.0,0.0,0.0,0.9633333333333334,0.0,0.05389328983106047,4.877939129998291,0.9,0.04,1.0,0.016666666666666666
