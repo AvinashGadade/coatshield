@@ -29,6 +29,12 @@ CONTROLLERS = {
     "C3": "CoatShield",
 }
 Bootstrap = Literal["all", "needed", "none"]
+ESTIMATE_COLUMNS = (
+    "n", *(f"{method}_{stat}" for method in ("raw", "ipw", "model", "hybrid")
+           for stat in ("mean", "d10", "d50", "d90", "cv")),
+    "ipw_ess", "ipw_uncovered", "fit_beta", "cv_within", "cv2_within_unclipped",
+    "d10_lo", "d10_hi", "p_spec", "ref_median_um",
+)
 
 
 def _reference(result: BatchResult, step: int, cfg: Config, size, thickness) -> Reference:
@@ -162,7 +168,9 @@ def run_estimators(
             row.update(est)
             row["ref_median_um"] = float(np.exp(weighted_quantile(ref.log_size, ref.weight, 0.5)))
         rows.append(row)
-    return pd.DataFrame(rows)
+    # Every column exists even if no window ever held enough objects to estimate from.
+    return pd.DataFrame(rows).reindex(columns=[*rows[0], *(c for c in ESTIMATE_COLUMNS
+                                                             if c not in rows[0])])
 
 
 def stop_steps(result: BatchResult, est: pd.DataFrame, cfg: Config) -> dict[str, int | None]:

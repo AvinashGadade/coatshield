@@ -331,3 +331,12 @@ def test_raw_estimate_is_the_plain_sample_summary():
     est = raw_estimate(x)
     assert est["mean"] == pytest.approx(x.mean())
     assert est["d10"] == pytest.approx(np.quantile(x, 0.1), abs=0.02)
+
+
+def test_too_few_objects_gives_empty_estimates_not_an_error():
+    cfg = cfg_small(**{"window.objects_per_min": 50.0, "batch.duration_h": 2.0})
+    result = run_batch(cfg, cache=False)
+    est = run_estimators(result, cfg, bootstrap="needed")
+    assert est.hybrid_d10.isna().all() and est.raw_d10.isna().all()
+    out = evaluate_controllers(result, est, cfg)
+    assert not out.loc["C2", "stopped"] and not out.loc["C3", "stopped"]

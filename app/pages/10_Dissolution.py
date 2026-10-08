@@ -12,6 +12,7 @@ common.page("Dissolution")
 story.banner()
 cfg = sidebar.render()
 bundle, precomputed = common.get_bundle(cfg)
+common.require_estimates(bundle, cfg)
 
 st.title("What the thickness distribution could mean for release")
 st.warning("Illustrative only. This is a straight line through three published data points "

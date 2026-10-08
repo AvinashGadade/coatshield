@@ -49,6 +49,20 @@ def get_bundle(cfg: Config) -> tuple[Bundle, bool]:
     return _live(bundle_key(live), live.model_dump_json()), False
 
 
+def require_estimates(bundle: Bundle, cfg: Config) -> None:
+    """Stop the page with an explanation if the window never held enough pellets to estimate."""
+    if bundle.est.hybrid_d10.notna().any():
+        return
+    per_window = cfg.window.objects_per_min * cfg.estimator.window_min
+    st.warning(
+        f"With these settings the window holds about {per_window:.0f} objects in "
+        f"{cfg.estimator.window_min:g} minutes, and after the gate and undecided scans fewer "
+        f"than the {cfg.controller.min_objects} accepted pellets needed for an estimate. "
+        "Raise “Objects per minute” in the sidebar.")
+    footer(bundle, False)
+    st.stop()
+
+
 def layout(fig, title: str | None = None, height: int = 420, **kwargs):
     """Recessive grid and axes, ink-coloured text, legend on top."""
     fig.update_layout(

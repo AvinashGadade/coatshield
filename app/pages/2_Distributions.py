@@ -11,6 +11,7 @@ common.page("Distributions")
 story.banner()
 cfg = sidebar.render()
 bundle, precomputed = common.get_bundle(cfg)
+common.require_estimates(bundle, cfg)
 
 st.title("Truth, raw sample and corrected estimate")
 truth, est = bundle.truth, bundle.est

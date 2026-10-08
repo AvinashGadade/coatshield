@@ -81,3 +81,9 @@ def test_app_never_imports_torch():
             if any(n.split(".")[0] == "torch" for n in names):
                 offenders.append(str(path))
     assert not offenders
+
+
+def test_low_object_rate_shows_a_message_instead_of_crashing():
+    at = run(APP / "pages" / "3_Controllers.py", objects_per_min=100, product="enteric")
+    assert not at.exception, at.exception
+    assert any("Objects per minute" in w.value for w in at.warning)

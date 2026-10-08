@@ -12,6 +12,7 @@ common.page("Controllers")
 story.banner()
 cfg = sidebar.render()
 bundle, precomputed = common.get_bundle(cfg)
+common.require_estimates(bundle, cfg)
 
 st.title("Four stopping rules, one batch")
 truth, est, ctrl = bundle.truth, bundle.est, bundle.controllers.set_index("controller")
