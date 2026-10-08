@@ -25,3 +25,4 @@ app/.runtime/
 output file from v100/
 reports/chain_calibration.log
 reports/gallery_build.log
+reports/validation_error_model.log

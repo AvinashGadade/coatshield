@@ -260,3 +260,53 @@ def test_scan_features_have_the_documented_order(cfg):
     assert named["noise_floor_db"] == pytest.approx(-30.0)
     assert named["segmentation_entropy"] == pytest.approx(np.log(3), rel=1e-3)
     assert named["gate_confidence"] == 0.9 and named["core_contrast"] == pytest.approx(0.0)
+
+
+# --- stored explanations and the drift done-when ---------------------------------
+
+
+def test_explanations_are_stored_and_linked_by_record_id(cfg, tmp_path):
+    import numpy as np
+
+    from coatshield.chain.pipeline import LabelSegmenter, SampledObject, process_object
+    from coatshield.compliance.explain import load_explanation, record_id, save_explanation
+    from coatshield.twin.population import SINGLE
+
+    obj = SampledObject(true_class=SINGLE, diameter_um=732.0, thickness_um=16.0,
+                        n_coat=cfg.coating.n, n_core=cfg.core.n, speed_m_s=0.3, snr_db=35.0,
+                        seed=2)
+    rec = process_object(obj, cfg, LabelSegmenter(cfg), cfg.coating.n)
+    rec.intermediates["prob"] = np.full((3, cfg.oct.depth_pixels, cfg.oct.out_ascans), 1 / 3)
+    rid = save_explanation(rec.summary(), rec.intermediates, "modelhash", tmp_path)
+    assert rid == record_id(rec.summary(), "modelhash") and len(rid) == 16
+    assert rid != record_id(rec.summary(), "another model")
+    back = load_explanation(rid, tmp_path)
+    assert back["meta"]["record_id"] == rid and back["meta"]["gate_features"]["solidity"] > 0.9
+    assert np.array_equal(back["scan"], rec.intermediates["scan"])
+    assert back["coating_probability"].dtype == np.uint8
+    assert (tmp_path / f"{rid}.npz").stat().st_size < 400_000
+
+
+def test_fouling_trips_the_alarm_before_a_wrong_reading_is_accepted(cfg):
+    """On the precomputed chain scans: as fouling rises, the undecided share rises and the
+    alarm comes before any accepted reading is off by more than chain.max_error_um."""
+    import numpy as np
+
+    from coatshield.compliance import drift
+    from coatshield.config import REPO_ROOT
+
+    path = REPO_ROOT / "app" / "assets" / "drift.npz"
+    if not path.exists():
+        pytest.skip("run scripts/build_gallery.py first")
+    d = np.load(path)
+    ramp = ~d["baseline"]
+    order = np.flatnonzero(ramp)[np.argsort(d["level"][ramp], kind="stable")]
+    baseline = drift.fit_baseline(d["features"][d["baseline"]], cfg)
+    out = drift.monitor(d["features"][order], d["undecided"][order], baseline, cfg)
+    states = list(out["state"])
+    level = d["level"][order]
+    assert d["undecided"][order][level >= 0.9].mean() > d["undecided"][order][level <= 0.2].mean()
+    assert drift.ALARM in states
+    bad = ~d["undecided"][order] & (np.abs(d["error_um"][order]) > cfg.chain.max_error_um)
+    if bad.any():
+        assert states.index(drift.ALARM) < int(np.argmax(bad))
