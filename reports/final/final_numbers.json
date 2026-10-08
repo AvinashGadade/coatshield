@@ -1,5 +1,5 @@
 {
- "created_utc": "2026-10-08T07:42:41+00:00",
+ "created_utc": "2026-10-08T11:26:11+00:00",
  "config_hash": "db3aeeba7626",
  "headline_placeholder": {
   "source": "validation_cells_db3aeeba7626.csv",
@@ -119,12 +119,12 @@
   "error_model": {
    "version": "0.1.0",
    "sha256": "236b8dbf43fb36f5f3d87f91329719afdfeafccc2cc260d582e675bae87a8110",
-   "status": "candidate"
+   "status": "locked"
   },
   "unet": {
    "version": "0.1.0",
    "sha256": "2abe0b6b30a76bca08f29f1373c6fd342d8d93656b09d3cc727cae563b51b947",
-   "status": "candidate"
+   "status": "locked"
   }
  },
  "locked_evaluation": null

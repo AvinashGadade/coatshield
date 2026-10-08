@@ -1,6 +1,6 @@
 # CoatShield final report
 
-Built 2026-10-08T07:42:41+00:00 from the files in `reports/`. Every number names its source file; file names carry the hash of the configuration that produced them. Demonstration on simulated and public data, not a validated GMP system.
+Built 2026-10-08T11:26:11+00:00 from the files in `reports/`. Every number names its source file; file names carry the hash of the configuration that produced them. Demonstration on simulated and public data, not a validated GMP system.
 
 ## 1. Headline with the placeholder measurement (1 um noise)
 
@@ -61,8 +61,8 @@ Source: `app/assets/bundles/bceb510b2581` (200,000 simulated pellets for 96 mill
 
 | Model | Version | SHA-256 | Status |
 | --- | --- | --- | --- |
-| error_model | 0.1.0 | `236b8dbf43fb36f5f3d87f91329719afdfeafccc2cc260d582e675bae87a8110` | candidate |
-| unet | 0.1.0 | `2abe0b6b30a76bca08f29f1373c6fd342d8d93656b09d3cc727cae563b51b947` | candidate |
+| error_model | 0.1.0 | `236b8dbf43fb36f5f3d87f91329719afdfeafccc2cc260d582e675bae87a8110` | locked |
+| unet | 0.1.0 | `2abe0b6b30a76bca08f29f1373c6fd342d8d93656b09d3cc727cae563b51b947` | locked |
 
 ## 6. Locked test set
 
