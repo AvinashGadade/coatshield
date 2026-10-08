@@ -1,0 +1,1 @@
+window.CONSOLE_SCENARIOS=[{"id": "default", "label": "Default: window favours big pellets (m = 3)"}, {"id": "no_bias", "label": "No window bias (m = 0)"}, {"id": "window_fouling", "label": "Fault: window fouling"}, {"id": "spray_drying", "label": "Fault: spray-drying"}];

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoatShield Live Console</title>
+<link rel="stylesheet" href="console.css">
+</head>
+<body>
+<header class="bar">
+  <div class="brand">CoatShield <span>Live Console</span></div>
+  <div class="badge" title="Everything on this screen is a simulated batch replayed from files">SIMULATED REPLAY</div>
+  <nav class="tabs" id="tabs" role="tablist">
+    <button role="tab" data-tab="monitoring" class="on">Monitoring</button>
+    <button role="tab" data-tab="process">Process</button>
+    <button role="tab" data-tab="image">Image</button>
+    <button role="tab" data-tab="signal">Signal</button>
+    <button role="tab" data-tab="batch">Batch</button>
+  </nav>
+  <div class="spacer"></div>
+  <button class="ghost" id="tourBtn">Guided tour</button>
+  <button class="ghost purple" id="complianceBtn">Compliance</button>
+</header>
+
+<div class="banner" id="stopBanner" hidden>
+  <strong>Recommend STOP</strong>
+  <span id="stopText"></span>
+  <button id="signOpen">Sign decision</button>
+</div>
+
+<main class="layout">
+  <aside class="rail" id="rail">
+    <div class="group">
+      <div class="row3">
+        <button class="primary" id="playBtn">Start</button>
+        <button id="pauseBtn">Pause</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+      <label>Replay speed <b id="speedVal"></b>
+        <input type="range" id="speed" min="0" max="6" step="1" value="3">
+      </label>
+      <label>Batch time <b id="clockVal"></b>
+        <input type="range" id="scrub" min="0" max="1000" step="1" value="0">
+      </label>
+    </div>
+    <div class="group">
+      <label>Scenario
+        <select id="scenario"></select>
+      </label>
+      <label>Spec: d10 at least
+        <input type="text" id="spec" readonly>
+      </label>
+      <label class="check"><input type="checkbox" id="reveal"> Reveal true d10</label>
+      <label class="check"><input type="checkbox" id="ghost" checked> Show where each rule stops</label>
+    </div>
+    <div class="group" id="faultGroup">
+      <div class="cap">Inject a fault</div>
+      <button class="fault" data-fault="window_fouling">Window fouling</button>
+      <button class="fault" data-fault="spray_drying">Spray-drying</button>
+      <button class="fault" data-fault="default">Clear fault</button>
+    </div>
+    <p class="fine" id="assumption"></p>
+  </aside>
+
+  <section class="stage">
+    <div class="tabpane on" id="tab-monitoring">
+      <div class="cols">
+        <div class="chartwrap">
+          <div id="chart"></div>
+          <div class="legendrow" id="legend"></div>
+        </div>
+        <div class="tiles" id="tiles"></div>
+      </div>
+      <div class="card" id="card" hidden></div>
+    </div>
+    <div class="tabpane" id="tab-process"></div>
+    <div class="tabpane" id="tab-image"></div>
+    <div class="tabpane" id="tab-signal"></div>
+    <div class="tabpane" id="tab-batch"></div>
+  </section>
+</main>
+
+<div class="modal" id="signModal" hidden>
+  <form class="sheet" id="signForm">
+    <h2>Operator e-signature</h2>
+    <p id="signSummary"></p>
+    <label>Name <select id="signUser"></select></label>
+    <label>Meaning <select id="signMeaning"></select></label>
+    <label>Reason <select id="signReason"></select></label>
+    <label>Comment (optional) <input type="text" id="signComment" maxlength="120"></label>
+    <label>Password (PIN) <input type="password" id="signPin" autocomplete="off" required></label>
+    <p class="fine" id="signNote"></p>
+    <p class="result" id="signResult"></p>
+    <div class="row3">
+      <button type="submit" class="primary">Sign</button>
+      <button type="button" id="signCancel">Close</button>
+    </div>
+  </form>
+</div>
+
+<aside class="drawer" id="drawer" hidden></aside>
+<div class="callout" id="callout" hidden></div>
+<footer class="foot" id="foot"></footer>
+
+<script src="vendor/plotly.min.js"></script>
+<script src="data/scenarios.js"></script>
+<script src="data/scans/index.js"></script>
+<script src="console.js"></script>
+<script src="console_tabs.js"></script>
+</body>
+</html>

@@ -28,6 +28,19 @@ If the dashboard cannot be shown, open `web/index.html` in any browser. It is a 
 file with no dependencies that runs a reduced version of the batch simulation in the page,
 with the window-bias slider.
 
+## Live Console
+
+One simulated batch replayed the way an in-line operator screen shows it: per-pellet readings
+streaming in, live tiles, the scan behind each dot, where each rule would stop, and the
+operator's signature. Every screen is marked "Simulated replay".
+
+- In the dashboard: the **Live Console** page (signatures go to the audit trail; the batch
+  record exports as PDF).
+- On its own, with no server and no network: open `web/console/index.html` in a browser
+  (signatures then stay in the browser).
+- Rebuild its data after a config or model change: `make console-data` (about 6 minutes).
+- Check it in headless Chrome: `python scripts/check_console.py`.
+
 ## Verify the headline
 
 ```bash
@@ -55,6 +68,7 @@ used in the deck.
 | `coatshield/compliance/` | Confidence and undecided state, drift monitor, audit trail, e-signature, model registry, batch record |
 | `app/` | Streamlit dashboard, 15 pages |
 | `web/index.html` | Server-free browser fallback |
+| `web/console/` | Live Console: static replay screen and its precomputed data |
 | `models/` | `unet.onnx`, `error_model.json`, `manifest.json` (hashes, metrics), `CHANGELOG.md` |
 | `scripts/` | Data downloads, dataset builders, validation, calibration, exports |
 | `reports/` | Validation CSVs, figures and summaries |

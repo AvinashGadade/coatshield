@@ -53,6 +53,10 @@ STEPS = (
     Step("9", "The audit panel", "pages/11_Audit.py",
          "The model versions, the operator's signature and the log entry it writes. "
          "The operator decides; the system shows its evidence."),
+    Step("10", "All of it, live", "pages/00_Live_Console.py",
+         "One simulated batch replayed as an operator would see it: pellets streaming in, the "
+         "gate, the corrected d10, where each rule would stop, and the signature. Press Start, "
+         "or Guided tour."),
 )
 
 

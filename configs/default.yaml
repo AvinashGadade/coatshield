@@ -177,6 +177,21 @@ app:
   animation_frames: 48            # Implementation: frames in one loop of the bed animation
   sample_rows: 3000               # Implementation: window records kept per precomputed scenario
 
+console:
+  max_events: 5000                # Brief: 3,000-6,000 window detections per replayed batch
+  scan_thickness_um: [2.0, 26.0]  # Implementation: thickness range of the representative scans (log-spaced)
+  scan_thickness_steps: 16        # Implementation
+  scan_diameters_um: [550.0, 700.0, 800.0]   # Implementation: pellet sizes of the representative scans
+  scan_fouling: [0.0, 0.5, 0.85]  # Implementation: window fouling levels of the representative scans
+  scan_repeats: 2                 # Implementation: scans per grid point (about 290 in all)
+  scan_rows: 300                  # Implementation: depth rows kept in a scan picture
+  scan_seed_base: 800000          # Implementation: seeds of the representative scans start here
+  scan_match_weights: [3.0, 0.0025, 4.0]   # Implementation: cost per unit of log thickness, per um of size, per unit of fouling when matching an event to a scan
+  jpeg_quality: 82                # Implementation: quality of the stored scan pictures
+  eta_window_min: 30.0            # Assumption: trend window for the estimated time to spec
+  batch_frames: 36                # Implementation: snapshots of the size and thickness distributions per replay
+  thickness_merge: 3              # Implementation: thickness bins merged for the distribution curves (as on the Distributions page)
+
 web:
   n_pellets: 50000                # Build guide: the browser fallback simulates 50,000 pellets
   step_s: 300.0                   # Implementation: 5-minute steps keep the page responsive

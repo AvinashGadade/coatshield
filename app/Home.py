@@ -53,6 +53,7 @@ with st.expander("The demo script"):
 
 st.markdown("##### All pages")
 links = (
+    ("pages/00_Live_Console.py", "Live Console: one batch replayed as an operator sees it"),
     ("pages/1_Batch.py", "Batch: the bed and the window"),
     ("pages/2_Distributions.py", "Distributions: truth, raw sample, corrected"),
     ("pages/3_Controllers.py", "Controllers: four stopping rules on one batch"),

@@ -133,7 +133,8 @@ def process_object(obj: SampledObject, cfg: Config, segmenter, pooled_n: float,
         segmenter.set_truth(params, scan.x_um, scan.crop_start_px)
     found = segmenter.surfaces(scan.image)
     if keep:
-        inter.update(spectrum=raw.spectra[raw.spectra.shape[0] // 2], scan=scan.image,
+        inter.update(spectrum=raw.spectra[raw.spectra.shape[0] // 2],
+                     background=raw.background, scan=scan.image,
                      x_um=scan.x_um, depth_px_um=scan.depth_px_um, prob=found.get("prob"),
                      outer_px=found["outer"], inner_px=found["inner"], valid=found["valid"],
                      reflector_db=scan.reflector_db)

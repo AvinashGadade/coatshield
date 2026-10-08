@@ -231,6 +231,22 @@ class AppCfg(_Section):
     sample_rows: int = Field(gt=0)
 
 
+class ConsoleCfg(_Section):
+    max_events: int = Field(gt=0)
+    scan_thickness_um: tuple[float, float]
+    scan_thickness_steps: int = Field(gt=1)
+    scan_diameters_um: tuple[float, ...]
+    scan_fouling: tuple[float, ...]
+    scan_repeats: int = Field(gt=0)
+    scan_rows: int = Field(gt=16)
+    scan_seed_base: int = Field(ge=0)
+    scan_match_weights: tuple[float, float, float]
+    jpeg_quality: int = Field(gt=0, le=100)
+    eta_window_min: float = Field(gt=0)
+    batch_frames: int = Field(gt=1)
+    thickness_merge: int = Field(gt=0)
+
+
 class WebCfg(_Section):
     n_pellets: int = Field(gt=0)
     step_s: float = Field(gt=0)
@@ -414,6 +430,7 @@ class Config(_Section):
     diagnosis: DiagnosisCfg
     validation: ValidationCfg
     app: AppCfg
+    console: ConsoleCfg
     web: WebCfg
     dissolution: DissolutionCfg
     oct: OctCfg
