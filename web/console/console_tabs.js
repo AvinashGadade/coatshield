@@ -327,6 +327,17 @@ window.consoleExtras = function () {
   HOOKS.drawer = drawDrawer; HOOKS.record = gotRecord;
   $("complianceBtn").onclick = () => { $("drawer").hidden = !$("drawer").hidden; if (!$("drawer").hidden) drawDrawer(); };
   $("tourBtn").onclick = () => tour(tourAt < 0 ? 0 : -1);
+  // Full screen. Inside the dashboard the frame may not be allowed to; then open the console in its own tab.
+  $("fullBtn").onclick = () => {
+    if (document.fullscreenElement) { document.exitFullscreen(); return; }
+    const root = document.documentElement;
+    const ask = root.requestFullscreen ? root.requestFullscreen() : Promise.reject(new Error("unsupported"));
+    ask.catch(() => { window.open(window.location.href, "_blank"); });
+  };
+  document.addEventListener("fullscreenchange", () => {
+    $("fullBtn").textContent = document.fullscreenElement ? "Exit full screen" : "Full screen";
+    setTimeout(() => { if (state.tab === "monitoring") Plotly.Plots.resize("chart"); render(true); }, 150);
+  });
   window.CS.tour = tour; window.CS.drawDrawer = drawDrawer;
   // The drift state moves with the replay clock, so an open drawer is refreshed while playing.
   setInterval(() => { if (state.playing && !$("drawer").hidden) drawDrawer(); }, 1000);

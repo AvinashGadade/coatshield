@@ -137,3 +137,7 @@ button.fault.on { border-color: var(--stop); color: #ffb3bb; }
 @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } .cols, .grid2 { grid-template-columns: 1fr; }
   .card { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .health > div { transition: none; } }
+
+/* Full screen: the page fills the display and scrolls by itself. */
+html:fullscreen { overflow: auto; background: var(--bg); }
+html:fullscreen #chart { height: calc(100vh - 230px); min-height: 420px; }
