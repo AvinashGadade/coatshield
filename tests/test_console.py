@@ -324,7 +324,8 @@ def test_scan_library_has_thumbnails_and_index_methods(cfg):
 def test_page_says_simulated_and_works_offline():
     html = (CONSOLE / "index.html").read_text()
     assert "SIMULATED REPLAY" in html
-    assert 'id="fullBtn"' in html and "requestFullscreen" in (CONSOLE / "console_tabs.js").read_text()
+    assert 'id="fullBtn"' in html
+    assert "requestFullscreen" in (CONSOLE / "console_tabs.js").read_text()
     for tab in ("monitoring", "process", "image", "signal", "batch"):
         assert f'data-tab="{tab}"' in html and f'id="tab-{tab}"' in html
     own = [html] + [(CONSOLE / f).read_text() for f in ("console.js", "console_tabs.js",
