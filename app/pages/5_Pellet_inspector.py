@@ -153,4 +153,19 @@ if "scan" in inter:
                    f"surface normal with Snell refraction, using n = {pooled_n:g}.")
     else:
         st.info("Too few A-scans carry both surfaces, so no thickness is reported.")
+st.divider()
+if st.button("Store the evidence for this decision",
+             help="Saves the camera image, shape measures, probability map and surfaces under "
+                  "a record ID and writes that ID to the audit trail."):
+    from coatshield.compliance import registry
+    from coatshield.compliance.audit import AuditTrail
+    from coatshield.compliance.explain import save_explanation
+
+    runtime = common.REPO_ROOT / "app" / ".runtime"
+    model_hash = registry.combined_hash()
+    rid = save_explanation(row, inter, model_hash, runtime / "explanations")
+    AuditTrail(runtime / "audit.jsonl").append(
+        "system", "system", "explanation_stored", f"record {rid}", new=row["status"],
+        reason="evidence stored on request", model_hash=model_hash)
+    st.success(f"Stored as record {rid}; the audit trail now points at it.")
 common.footer(extra=f"pellet {int(pellet)}")

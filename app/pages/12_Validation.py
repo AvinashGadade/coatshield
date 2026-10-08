@@ -19,8 +19,16 @@ sections = (
     ("Refractive index and thickness solver", "solver_summary_*.md",
      ("solver_validation_*.png",), "python scripts/validate_solver.py"),
     ("Agglomerate gate", "gate_comparison_*.md", (), "python scripts/tune_gate.py"),
-    ("Boundary finder", "seg_evaluation_*.md", (), "python scripts/evaluate_seg.py"),
+    ("Boundary finder", "seg_evaluation_*.md", ("gradcam_unet_*.png",),
+     "python scripts/evaluate_seg.py"),
+    ("Full measurement chain", "chain_calibration_*.md", (), "python scripts/calibrate_chain.py"),
+    ("Full chain against its error model", "chain_consistency_*.md", (),
+     "python scripts/check_chain_consistency.py"),
 )
+final = common.REPORTS / "final" / "final_report.md"
+if final.exists():
+    with st.expander("Final report: every number used in the deck, with its source file"):
+        st.markdown(final.read_text())
 for title, summary, figures, command in sections:
     st.header(title)
     path = common.latest_report(summary)

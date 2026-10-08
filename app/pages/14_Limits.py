@@ -16,7 +16,9 @@ st.markdown("""
 - **The headline depends on two assumptions.** The window favours big pellets (never measured), and big pellets coat faster (published: large pellets grow 1.08 to 1.81 times as fast as small ones within one batch). With either one absent, the raw rule does not ship extra out-of-spec pellets.
 - **The correction only undoes selection by size**, which the camera sees. If the window also selects on something the camera cannot see, the corrected estimate degrades; the Sensitivity page shows by how much.
 - **The estimator relies on a known measurement noise.** If the true noise is lower than the stated value, the corrected d10 reads high.
-- **Retinal OCT is used only for pretraining.** Accuracy on eye layers is not accuracy on coatings.
+- **The boundary finder was trained on synthetic scans only.** Pretraining on real retinal OCT was tried and did not help: the network trained from scratch scored better on every measure, so it is the one in use. Accuracy on eye layers is not accuracy on coatings.
+- **Pigmented coatings are not readable.** The coating-core interface is hidden by scatter, and those scans end undecided.
+- **The confidence score leaves out the gate's confidence.** The build plan multiplies it in; on the calibration set that sent a fifth of clean scans to "undecided" for no gain in accuracy, so the gate acts as a pass/fail condition instead.
 - **Pigmented coatings and real pellet velocity are not modelled from measured data.**
 - **How fused pellets misread is unknown**, so the gate's benefit is shown, not quantified. The gate was tested on synthetic silhouettes only.
 - **Maldistribution is weakly detectable** at 1 µm of measurement noise in this simulation.
