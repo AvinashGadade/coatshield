@@ -109,6 +109,15 @@ def load_error_model(path: Path | str) -> ErrorModel:
     return _load(str(_resolve(path)))
 
 
+def config_with_error_model(cfg: Config, path: str) -> Config:
+    """The config of a batch measured through the fitted error model: the twin uses the
+    model, and the estimator is told the chain's own noise at the operating point."""
+    model = load_error_model(path)
+    return cfg.with_overrides({
+        "measurement.error_model_path": path,
+        "measurement.sigma_um": model.operating_spread_um(cfg.batch.target_mean_um)})
+
+
 def _resolve(path: Path | str) -> Path:
     path = Path(path)
     return path if path.is_absolute() else REPO_ROOT / path

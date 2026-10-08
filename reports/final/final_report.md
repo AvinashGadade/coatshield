@@ -1,6 +1,6 @@
 # CoatShield final report
 
-Built 2026-10-08T06:11:12+00:00 from the files in `reports/`. Every number names its source file; file names carry the hash of the configuration that produced them. Demonstration on simulated and public data, not a validated GMP system.
+Built 2026-10-08T07:42:41+00:00 from the files in `reports/`. Every number names its source file; file names carry the hash of the configuration that produced them. Demonstration on simulated and public data, not a validated GMP system.
 
 ## 1. Headline with the placeholder measurement (1 um noise)
 
@@ -20,7 +20,21 @@ Source: `validation_cells_db3aeeba7626.csv`
 
 ## 2. Headline with the measurement chain's fitted error model
 
-Not run.
+Source: `validation_cells_f5ba3ea2e75f.csv`
+
+| Stopping rule | Stops at (h) | Truly below spec | True d10 (um) |
+| --- | --- | --- | --- |
+| C0 Gravimetric | 9.75 | 5.6% | 12.68 |
+| C1 Raw mean | 8.66 | 16.9% | 11.32 |
+| C2 Raw d10 | 8.31 | 23.1% | 10.87 |
+| C3 CoatShield | 9.24 | 9.6% | 12.05 |
+
+- The raw-d10 rule ships **2.4x** the out-of-spec pellets of the CoatShield rule.
+- Corrected d10 error: 0.03 um median absolute, 0.04 um in the worst grid cell (raw sample: 0.47 um).
+- Strongest assumptions in the grid: the raw rule ships 30% below spec.
+- Hidden selection (gamma = 0.5): corrected d10 reads +0.12 um; CoatShield ships 12.8% below spec on average, 19.8% in the worst cell.
+
+The ratio is 2.1x with the placeholder and 2.4x with the chain's error model: the headline **holds** under the measurement error of the simulated chain.
 
 ## 3. Batch twin (default scenario)
 

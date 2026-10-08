@@ -13,7 +13,22 @@ story.banner()
 cfg = sidebar.render()
 
 st.title("What the claim rests on")
-tag = load_config().analysis_hash()
+ERROR_MODEL = "models/error_model.json"
+base = load_config()
+tag = base.analysis_hash()
+realistic = None
+if (common.REPO_ROOT / ERROR_MODEL).exists():
+    from coatshield.chain.error_model import config_with_error_model
+
+    realistic_tag = config_with_error_model(base, ERROR_MODEL).analysis_hash()
+    if (common.REPORTS / f"validation_cells_{realistic_tag}.csv").exists():
+        realistic = realistic_tag
+if realistic:
+    choice = st.radio("Measurement error used in the validation runs",
+                      ("Fitted from the full measurement chain", "Placeholder (1 µm noise)"),
+                      horizontal=True)
+    if choice.startswith("Fitted"):
+        tag = realistic
 path = common.REPORTS / f"validation_cells_{tag}.csv"
 if not path.exists():
     quick = common.REPORTS / f"validation_cells_{tag}-quick.csv"

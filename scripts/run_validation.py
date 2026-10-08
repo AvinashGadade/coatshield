@@ -219,9 +219,12 @@ def write_summary(cells, faults, cfg, tag, path, quick, n_grid, n_fault) -> str:
         "## No false claim of bias (m = 0 or k = 0)",
         "",
         f"True d10 at the raw-d10 stop minus at the CoatShield stop: {gap.min():+.2f} to "
-        f"{gap.max():+.2f} um across those cells. Where it is positive, the raw rule stops "
-        "late, not early: measurement noise widens the raw sample, so its d10 reads low. "
-        "The raw rule ships at most "
+        f"{gap.max():+.2f} um across those cells. "
+        + ("Where it is positive, the raw rule stops late, not early: measurement noise widens "
+           "the raw sample, so its d10 reads low. " if gap.max() > 0.1 else
+           "The two rules stop at almost the same coat; the small negative gap is the margin "
+           "CoatShield adds by waiting for 95% confidence. ")
+        + "The raw rule ships at most "
         f"{no_bias.C2_true_below_spec_pct.max():.1f}% below spec in these cells.",
         "",
         "## Hidden selection (gamma > 0): where the correction degrades",
@@ -275,13 +278,10 @@ def main() -> None:
 
     cfg = load_config()
     if args.error_model:
-        from coatshield.chain.error_model import load_error_model
+        from coatshield.chain.error_model import config_with_error_model, load_error_model
 
         model = load_error_model(args.error_model)
-        # The estimator is told the chain's own noise at the operating point.
-        cfg = cfg.with_overrides({
-            "measurement.error_model_path": args.error_model,
-            "measurement.sigma_um": model.operating_spread_um(cfg.batch.target_mean_um)})
+        cfg = config_with_error_model(cfg, args.error_model)
         print(f"error model {args.error_model} sha256 {model.sha256()[:12]}, estimator noise "
               f"{cfg.measurement.sigma_um:.2f} um")
     tag = cfg.analysis_hash() + ("-quick" if args.quick else "")

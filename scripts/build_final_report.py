@@ -15,7 +15,7 @@ import pandas as pd
 from _common import REPO_ROOT, REPORTS_DIR
 
 from coatshield.bundle import bundle_key, load_bundle
-from coatshield.chain.error_model import load_error_model
+from coatshield.chain.error_model import config_with_error_model, load_error_model
 from coatshield.compliance.registry import load_manifest
 from coatshield.config import load_config
 from coatshield.estimate.controllers import CONTROLLERS
@@ -104,9 +104,7 @@ def main() -> None:
     model = load_error_model(ERROR_MODEL) if (REPO_ROOT / ERROR_MODEL).exists() else None
     realistic = None
     if model is not None:
-        em_cfg = cfg.with_overrides({
-            "measurement.error_model_path": ERROR_MODEL,
-            "measurement.sigma_um": model.operating_spread_um(cfg.batch.target_mean_um)})
+        em_cfg = config_with_error_model(cfg, ERROR_MODEL)
         realistic = headline(REPORTS_DIR / f"validation_cells_{em_cfg.analysis_hash()}.csv", em_cfg)
     numbers["headline_chain_error_model"] = realistic
     lines += headline_lines("2. Headline with the measurement chain's fitted error model",
