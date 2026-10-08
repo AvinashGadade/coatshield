@@ -241,9 +241,9 @@ compliance:
     - {name: qa1, role: quality, pin_hash: 325225f7daf3104b118ed2c11209495f20e4d785ce747c0f6d558cb6be78cb14}
 
 chain:
-  fit_residual_scale_um: 1.5      # Assumption: circle-fit residual at which fit confidence falls to 37%
-  spread_scale_um: 1.5            # Assumption: spread of thickness across A-scans (um) at which fit confidence falls to 37%
-  confidence_min: 0.35            # Tuned by scripts/calibrate_chain.py on 4,000 objects (0.347): below this a pellet is "undecided"
+  fit_residual_scale_um: 4.0      # Chosen on the calibration set: circle-fit residual at which fit confidence falls to 37%
+  spread_scale_um: 4.0            # Chosen on the calibration set: spread of thickness across A-scans (um) at which it falls to 37%
+  confidence_min: 0.50            # Tuned by scripts/calibrate_chain.py on 4,000 objects: below this a pellet is "undecided"
   max_error_um: 2.0               # Build guide: at most 1% of accepted pellets may be off by more than this
   max_error_share: 0.01           # Build guide
   calibration_objects: 4000       # Build guide: 3,000-5,000 objects through the full chain
@@ -254,6 +254,11 @@ chain:
   snr_edges: [15.0, 25.0, 35.0, 45.0]              # Implementation
   thickness_edges: [2.0, 6.0, 12.0, 20.0, 40.0]    # Implementation
   min_cell_count: 15              # Implementation: fewer objects than this and a table cell falls back to a coarser average
+  consistency_pellets: 20000      # Build guide: reduced batch for the full-chain consistency check
+  consistency_hours: 1.0          # Build guide
+  consistency_objects_per_min: 50.0   # Build guide
+  consistency_speedup: 10.0       # Assumption: deposit per pass is multiplied by this so the short batch reaches spec
+  consistency_min_objects: 150    # Implementation: fewest objects in the window for a stop decision in this small batch
   operating_snr_db: 35.0          # Assumption: surface SNR of the scans in a normal batch
   operating_pigment: 0.05         # Assumption: pigment level of the product in a normal batch
 

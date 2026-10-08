@@ -76,7 +76,7 @@ def test_confidence_fusion_and_undecided_state(cfg):
     seg = conf.segmentation_confidence(np.array([0.9, 0.8, 0.0]), np.array([0.7, 0.9, 0.0]), used)
     assert seg == pytest.approx(0.75)
     assert conf.segmentation_confidence(np.ones(3), np.ones(3), np.zeros(3, bool)) == 0.0
-    assert conf.fuse(1.0, seg, good) == pytest.approx(seg * good)
+    assert conf.fuse(seg, good) == pytest.approx(seg * good)
     assert conf.is_decided(cfg.chain.confidence_min, cfg)
     assert not conf.is_decided(cfg.chain.confidence_min - 0.01, cfg)
 

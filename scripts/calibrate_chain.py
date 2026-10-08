@@ -69,6 +69,11 @@ def _one(index: int) -> dict:
     return process_object(obj, cfg, _STATE["seg"], obj.n_coat, keep=False).summary()
 
 
+def conf_product(seg, fit):
+    """The confidence score for whole columns (same formula as compliance.confidence.fuse)."""
+    return seg * fit
+
+
 def register_error_model(path, tag: str, n: int) -> None:
     """List the error model in models/manifest.json so its hash is checked like a model's."""
     import datetime as dt
@@ -92,13 +97,27 @@ def main() -> None:
     parser.add_argument("--segmenter", choices=("onnx", "label"), default="onnx")
     parser.add_argument("--n", type=int, default=None, help="objects (default: config)")
     parser.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) // 2))
+    parser.add_argument("--refit", default=None, metavar="CSV",
+                        help="reuse the chain results in this calibration table: recompute "
+                             "the confidence with the current settings and refit, without "
+                             "running the chain again")
     args = parser.parse_args()
     cfg = load_config()
-    n = args.n or cfg.chain.calibration_objects
     tag = cfg.hash(include=("seed", "oct", "seg", "solve", "gate_vision", "chain", "oct_dataset"))
-    with get_context("spawn").Pool(args.workers, initializer=_init,
-                                   initargs=(cfg.model_dump_json(), args.segmenter)) as pool:
-        rows = pd.DataFrame(pool.map(_one, range(n), chunksize=16))
+    if args.refit:
+        rows = pd.read_csv(args.refit)
+        n = len(rows)
+        cc = cfg.chain
+        fit = (np.exp(-((rows.fit_residual_um / cc.fit_residual_scale_um) ** 2))
+               * np.exp(-((rows.spread_um / cc.spread_scale_um) ** 2)))
+        has = rows.fit_residual_um.notna()
+        rows.loc[has, "fit_confidence"] = fit[has]
+        rows.loc[has, "confidence"] = conf_product(rows.seg_confidence[has], fit[has])
+    else:
+        n = args.n or cfg.chain.calibration_objects
+        with get_context("spawn").Pool(args.workers, initializer=_init,
+                                       initargs=(cfg.model_dump_json(), args.segmenter)) as pool:
+            rows = pd.DataFrame(pool.map(_one, range(n), chunksize=16))
     # Tune the undecided threshold first, then fit the error model with that threshold in
     # force, so the tables describe the readings that will actually be accepted.
     scanned = rows[(rows.true_true_class == SINGLE) & (rows.status != "gated")

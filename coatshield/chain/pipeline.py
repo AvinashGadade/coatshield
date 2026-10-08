@@ -156,7 +156,7 @@ def process_object(obj: SampledObject, cfg: Config, segmenter, pooled_n: float,
                                          surfaces.used)
     spread_um = result.intra_cv * result.thickness_um
     fit_c = conf.fit_confidence(result.fit_residual_um, spread_um, cfg)
-    score = conf.fuse(verdict.confidence, seg_c, fit_c)
+    score = conf.fuse(seg_c, fit_c)
     if keep:
         inter.update(circle=(surfaces.circle.xc, surfaces.circle.zc, surfaces.circle.radius),
                      used=surfaces.used, intra_cv=result.intra_cv,

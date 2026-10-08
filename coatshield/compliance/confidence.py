@@ -1,8 +1,14 @@
 """Confidence of one thickness reading, and the "undecided" state.
 
-score = gate confidence x segmentation confidence x fit confidence. Below the threshold
-(chain.confidence_min, tuned on validation data) the pellet is undecided: it is left out
-of the batch estimate and counted.
+score = segmentation confidence x fit confidence, for objects the gate passed as a
+confident single. Below the threshold (chain.confidence_min, tuned on validation data) the
+pellet is undecided: it is left out of the batch estimate and counted.
+
+The build guide multiplies in the gate's confidence as a third factor. On the calibration
+set that made the score worse: the gate's confidence varies with pellet size, not with
+thickness error, and with it 22% of clean scans ended undecided against 1% without it.
+The gate therefore acts as a pass/fail condition and its confidence is reported beside
+the score.
 """
 
 from __future__ import annotations
@@ -31,8 +37,8 @@ def fit_confidence(fit_residual_um: float, spread_um: float, cfg: Config) -> flo
                  * np.exp(-((spread_um / cc.spread_scale_um) ** 2)))
 
 
-def fuse(gate_confidence: float, seg_confidence: float, fit_conf: float) -> float:
-    return float(gate_confidence * seg_confidence * fit_conf)
+def fuse(seg_confidence: float, fit_conf: float) -> float:
+    return float(seg_confidence * fit_conf)
 
 
 def is_decided(score: float, cfg: Config) -> bool:

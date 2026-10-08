@@ -319,6 +319,11 @@ class ChainCfg(_Section):
     snr_edges: tuple[float, ...]
     thickness_edges: tuple[float, ...]
     min_cell_count: int = Field(gt=0)
+    consistency_pellets: int = Field(gt=0)
+    consistency_hours: float = Field(gt=0)
+    consistency_objects_per_min: float = Field(gt=0)
+    consistency_speedup: float = Field(gt=0)
+    consistency_min_objects: int = Field(gt=0)
     operating_snr_db: float
     operating_pigment: float = Field(ge=0, le=1)
 

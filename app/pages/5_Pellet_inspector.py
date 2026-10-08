@@ -147,10 +147,10 @@ if "scan" in inter:
         s3.metric("A-scans used", f"{int(np.sum(inter['used']))}")
         s3.caption(f"below {cfg.solve.max_angle_deg:g}° incidence")
         s4.metric("Spread across A-scans", f"{100 * inter['intra_cv']:.1f} %")
-        st.caption(f"Confidence = gate {row['gate_confidence']:.2f} × boundary finder "
-                   f"{row['seg_confidence']:.2f} × fit {row['fit_confidence']:.2f} = "
-                   f"{row['confidence']:.2f}. Thickness is measured along the surface normal "
-                   f"with Snell refraction, using n = {pooled_n:g}.")
+        st.caption(f"Confidence = boundary finder {row['seg_confidence']:.2f} × fit "
+                   f"{row['fit_confidence']:.2f} = {row['confidence']:.2f} (the gate passed it "
+                   f"with {row['gate_confidence']:.2f}). Thickness is measured along the "
+                   f"surface normal with Snell refraction, using n = {pooled_n:g}.")
     else:
         st.info("Too few A-scans carry both surfaces, so no thickness is reported.")
 common.footer(extra=f"pellet {int(pellet)}")

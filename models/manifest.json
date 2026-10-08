@@ -2,11 +2,11 @@
  "models": {
   "error_model": {
    "calibration_objects": 4000,
-   "config_hash": "cfa02a223f53",
-   "date_utc": "2026-10-08T05:29:39+00:00",
+   "config_hash": "88f396776323",
+   "date_utc": "2026-10-08T05:39:57+00:00",
    "file": "error_model.json",
    "fitted_with_unet_sha256": "2abe0b6b30a76bca08f29f1373c6fd342d8d93656b09d3cc727cae563b51b947",
-   "sha256": "25a16e8c42a44d804d60cd77f52038e323788efc1f1a5b80892367335f4fca99",
+   "sha256": "236b8dbf43fb36f5f3d87f91329719afdfeafccc2cc260d582e675bae87a8110",
    "status": "candidate",
    "version": "0.1.0"
   },

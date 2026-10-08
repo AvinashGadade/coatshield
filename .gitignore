@@ -24,3 +24,4 @@ app/.runtime/
 *_dryrun*
 output file from v100/
 reports/chain_calibration.log
+reports/gallery_build.log
