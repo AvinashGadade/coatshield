@@ -69,6 +69,24 @@ def _one(index: int) -> dict:
     return process_object(obj, cfg, _STATE["seg"], obj.n_coat, keep=False).summary()
 
 
+def register_error_model(path, tag: str, n: int) -> None:
+    """List the error model in models/manifest.json so its hash is checked like a model's."""
+    import datetime as dt
+
+    from _common import file_hash
+
+    manifest_path = MODELS / "manifest.json"
+    manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {"models": {}}
+    boundary_finder = manifest["models"].get("unet", {})
+    manifest["models"]["error_model"] = {
+        "file": path.name, "version": "0.1.0", "sha256": file_hash(path),
+        "calibration_objects": n, "config_hash": tag,
+        "fitted_with_unet_sha256": boundary_finder.get("sha256", "unknown"),
+        "date_utc": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"), "status": "candidate",
+    }
+    manifest_path.write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--segmenter", choices=("onnx", "label"), default="onnx")
@@ -96,6 +114,8 @@ def main() -> None:
                                         "confidence_min": tuned["confidence_min"]})
     path = MODELS / f"error_model{suffix}.json"
     digest = model.save(path)
+    if not suffix:
+        register_error_model(path, tag, n)
 
     measured = rows[(rows.status == "measured") & (rows.true_true_class == SINGLE)]
     clean = measured[(measured.true_fouling < 0.2) & (measured.true_snr_db >= 25)]

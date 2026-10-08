@@ -104,7 +104,7 @@ gate_vision:
   solidity_min: 0.90              # Tuned by scripts/tune_gate.py (twin if below)
   defect_max: 0.04                # Tuned by scripts/tune_gate.py (twin if deeper, relative to radius)
   touching_neck_max: 0.70         # Assumption: two lobes joined by a waist narrower than this share of the radius = touching
-  confidence_scale: 0.03          # Assumption: feature margin that maps to about 73% confidence
+  confidence_scale: 0.01          # Assumption: feature margin that maps to about 73% confidence (clean singles then score above 0.9)
   single_confidence_min: 0.5      # Assumption: a single passes to OCT only at or above this confidence
   cnn_channels: [32, 64, 128, 256]  # Build guide: four convolution blocks, 32 to 256 channels
   cnn_epochs: 20                  # Build guide: about 20 epochs
@@ -242,8 +242,8 @@ compliance:
 
 chain:
   fit_residual_scale_um: 1.5      # Assumption: circle-fit residual at which fit confidence falls to 37%
-  intra_cv_scale: 0.30            # Assumption: spread of thickness across A-scans at which it falls to 37%
-  confidence_min: 0.25            # Tuned by scripts/calibrate_chain.py: below this a pellet is "undecided"
+  spread_scale_um: 1.5            # Assumption: spread of thickness across A-scans (um) at which fit confidence falls to 37%
+  confidence_min: 0.35            # Tuned by scripts/calibrate_chain.py on 4,000 objects (0.347): below this a pellet is "undecided"
   max_error_um: 2.0               # Build guide: at most 1% of accepted pellets may be off by more than this
   max_error_share: 0.01           # Build guide
   calibration_objects: 4000       # Build guide: 3,000-5,000 objects through the full chain

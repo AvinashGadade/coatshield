@@ -307,7 +307,7 @@ class ComplianceCfg(_Section):
 
 class ChainCfg(_Section):
     fit_residual_scale_um: float = Field(gt=0)
-    intra_cv_scale: float = Field(gt=0)
+    spread_scale_um: float = Field(gt=0)
     confidence_min: float = Field(ge=0, le=1)
     max_error_um: float = Field(gt=0)
     max_error_share: float = Field(gt=0, lt=1)

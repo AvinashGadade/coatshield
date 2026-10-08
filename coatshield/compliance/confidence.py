@@ -20,11 +20,15 @@ def segmentation_confidence(margin_outer: np.ndarray, margin_inner: np.ndarray,
     return float(np.mean(np.minimum(margin_outer[used], margin_inner[used])))
 
 
-def fit_confidence(fit_residual_um: float, intra_cv: float, cfg: Config) -> float:
-    """High when the outer surface is a clean circle and thickness agrees across A-scans."""
+def fit_confidence(fit_residual_um: float, spread_um: float, cfg: Config) -> float:
+    """High when the outer surface is a clean circle and thickness agrees across A-scans.
+
+    spread_um is the standard deviation of thickness across the A-scans, in micrometres
+    (an absolute spread, so thin films are not penalised for their size).
+    """
     cc = cfg.chain
     return float(np.exp(-((fit_residual_um / cc.fit_residual_scale_um) ** 2))
-                 * np.exp(-((intra_cv / cc.intra_cv_scale) ** 2)))
+                 * np.exp(-((spread_um / cc.spread_scale_um) ** 2)))
 
 
 def fuse(gate_confidence: float, seg_confidence: float, fit_conf: float) -> float:

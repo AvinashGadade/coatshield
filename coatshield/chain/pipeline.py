@@ -11,6 +11,7 @@ from dataclasses import asdict, dataclass, field
 import numpy as np
 
 from coatshield.compliance import confidence as conf
+from coatshield.compliance import drift
 from coatshield.config import Config
 from coatshield.gate import silhouettes
 from coatshield.gate.classical import classify
@@ -20,6 +21,7 @@ from coatshield.seeds import rng
 from coatshield.solve.thickness import measure_surfaces, pellet_thickness
 from coatshield.twin.population import FINES, SINGLE, TWIN
 
+_CORE_ROWS = 80  # depth rows below the inner surface used for the core speckle feature
 _GATE_CLASS = {SINGLE: silhouettes.SINGLE, TWIN: silhouettes.TWIN, FINES: silhouettes.FINES}
 
 
@@ -60,11 +62,17 @@ class ChainRecord:
     confidence: float = 0.0
     seg_confidence: float = 0.0
     fit_confidence: float = 0.0
+    fit_residual_um: float = float("nan")
+    spread_um: float = float("nan")
+    drift_features: tuple = ()  # compliance.drift.FEATURES of the scan (empty when gated)
     intermediates: dict = field(default_factory=dict)
 
     def summary(self) -> dict:
         """Flat row for tables (no arrays)."""
-        row = {k: v for k, v in asdict(self).items() if k not in ("obj", "intermediates")}
+        skip = ("obj", "intermediates", "drift_features")
+        row = {k: v for k, v in asdict(self).items() if k not in skip}
+        row.update({f"f_{name}": value
+                    for name, value in zip(drift.FEATURES, self.drift_features, strict=False)})
         row.update({f"true_{k}": v for k, v in self.obj.as_dict().items()})
         row["error_um"] = self.thickness_um - self.obj.thickness_um
         return row
@@ -129,16 +137,25 @@ def process_object(obj: SampledObject, cfg: Config, segmenter, pooled_n: float,
                      x_um=scan.x_um, depth_px_um=scan.depth_px_um, prob=found.get("prob"),
                      outer_px=found["outer"], inner_px=found["inner"], valid=found["valid"],
                      reflector_db=scan.reflector_db)
+    # Features for the drift monitor: the core region is taken just below the inner surface.
+    rows = np.arange(scan.db.shape[1])[None, :]
+    inner_row = found["inner"][:, None]
+    core = found["valid"][:, None] & (rows > inner_row) & (rows <= inner_row + _CORE_ROWS)
+    features = tuple(float(v) for v in drift.scan_features(
+        scan.db, scan.noise_floor, scan.reflector_db, found.get("prob"), core,
+        verdict.confidence))
     surfaces = measure_surfaces(scan.db, found["outer"].astype(float),
                                 found["inner"].astype(float), found["valid"], scan.x_um,
                                 scan.depth_px_um, scan.crop_start_px, scan.reflector_db, cfg)
     if surfaces is None:
-        return ChainRecord(obj, "no_signal", gate_class, verdict.confidence, intermediates=inter)
+        return ChainRecord(obj, "no_signal", gate_class, verdict.confidence,
+                           drift_features=features, intermediates=inter)
 
     result = pellet_thickness(surfaces, pooled_n, pooled_n_se)
     seg_c = conf.segmentation_confidence(found["margin_outer"], found["margin_inner"],
                                          surfaces.used)
-    fit_c = conf.fit_confidence(result.fit_residual_um, result.intra_cv, cfg)
+    spread_um = result.intra_cv * result.thickness_um
+    fit_c = conf.fit_confidence(result.fit_residual_um, spread_um, cfg)
     score = conf.fuse(verdict.confidence, seg_c, fit_c)
     if keep:
         inter.update(circle=(surfaces.circle.xc, surfaces.circle.zc, surfaces.circle.radius),
@@ -150,4 +167,5 @@ def process_object(obj: SampledObject, cfg: Config, segmenter, pooled_n: float,
         uncertainty_um=result.uncertainty_um, optical_um=result.optical_um,
         radius_um=result.radius_um, n_reflectance=surfaces.n_reflectance,
         n_ratio=surfaces.n_ratio, confidence=score, seg_confidence=seg_c, fit_confidence=fit_c,
+        fit_residual_um=result.fit_residual_um, spread_um=spread_um, drift_features=features,
         intermediates=inter)
