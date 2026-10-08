@@ -70,7 +70,7 @@ def test_keep_false_drops_the_arrays(cfg):
 
 def test_confidence_fusion_and_undecided_state(cfg):
     good = conf.fit_confidence(0.2, 0.1, cfg)
-    poor = conf.fit_confidence(3.0, 4.0, cfg)
+    poor = conf.fit_confidence(8.0, 8.0, cfg)
     assert 0.9 < good <= 1.0 and poor < 0.05
     used = np.array([True, True, False])
     seg = conf.segmentation_confidence(np.array([0.9, 0.8, 0.0]), np.array([0.7, 0.9, 0.0]), used)
