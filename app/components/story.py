@@ -38,17 +38,23 @@ STEPS = (
          "Every combination of window bias and size-dependent growth, from the validation run. "
          "The toggle shows where the correction stops working.",
          state={"m": 4.0}),
+    Step("5", "One pellet scan", "pages/5_Pellet_inspector.py",
+         "A synthetic OCT scan of one pellet: the spectrum, the two surfaces the boundary "
+         "finder draws, the probability map behind them, and the thickness it computes."),
     Step("6", "The refractive index", "pages/6_Refractive_index.py",
          "Change the true index: assuming 1.5 misreads every thickness by the same factor. "
          "Three independent methods recover the index instead of assuming it."),
+    Step("7", "Fouling and “undecided”", "pages/5_Pellet_inspector.py",
+         "Raise window fouling: the signal fades, confidence falls and the scan turns "
+         "undecided instead of sending a wrong number to the controller.",
+         view={"inspect_fouling": 0.8}),
     Step("8", "The gate", "pages/7_Gate.py",
          "Fused pellets are flagged and counted; single pellets pass to the measurement."),
     Step("9", "The audit panel", "pages/11_Audit.py",
          "The model versions, the operator's signature and the log entry it writes. "
          "The operator decides; the system shows its evidence."),
 )
-# Demo steps 5 (one pellet scan) and 7 (fouling and "undecided") join the walk once the
-# trained boundary finder and the full measurement chain exist.
+
 
 
 def _go(index: int) -> None:
@@ -58,6 +64,9 @@ def _go(index: int) -> None:
     st.session_state.update(step.state)
     st.session_state["story_index"] = index
     st.session_state["story_view"] = dict(step.view)
+    for key in ("inspect_fouling", "inspect_snr"):  # page-level sliders a step may preset
+        if key in step.view:
+            st.session_state[key] = step.view[key]
     st.session_state["_goto"] = step.page
 
 

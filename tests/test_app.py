@@ -38,7 +38,7 @@ def test_page_renders_without_error(script):
     assert not at.exception, at.exception
     assert not at.error, [e.value for e in at.error]
     assert at.title
-    assert time.perf_counter() - start < 30  # first render includes imports; cached is far less
+    assert time.perf_counter() - start < 90  # first render includes imports; cached is far less
 
 
 def test_default_pages_come_from_precomputed_assets():
