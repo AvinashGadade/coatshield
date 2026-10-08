@@ -214,9 +214,25 @@ def main() -> None:
     if locked:
         result = json.loads(locked[-1].read_text())
         numbers["locked_evaluation"] = result
-        lines += [f"`{locked[-1].name}`: outer {result['outer_mae_px']:.2f} px, inner "
-                  f"{result['inner_mae_px']:.2f} px on {result['n_items']} scans, run by "
-                  f"{result['who']} at {result['when_utc']}.", ""]
+        lines += [f"`{locked[-1].name}`: {result['n_items']} scans the model never saw, run once "
+                  f"by {result['who']} at {result['when_utc']} on model "
+                  f"`{result['model_sha256'][:12]}`.", "",
+                  "| Surface | All scans (px) | SNR >= "
+                  f"{cfg.seg.eval_min_snr_db:g} dB (px) |", "| --- | --- | --- |",
+                  f"| Outer (air-coating) | {result['outer_mae_px']:.2f} | "
+                  f"{result['outer_mae_px_good_snr']:.2f} |",
+                  f"| Inner (coating-core) | {result['inner_mae_px']:.2f} | "
+                  f"{result['inner_mae_px_good_snr']:.2f} |", "",
+                  "These figures include the pigmented scans (a fifth of the set), in which the "
+                  "inner surface is hidden; the locked evaluation did not split clear from "
+                  "pigmented coats, and it is not rerun to add that split. On the validation "
+                  "set the same mixed figures were 0.54 and 3.74 px (all scans); clear coats "
+                  "alone gave 1.06 px for the inner surface.", ""]
+        thin = result.get("thinnest_separable_um")
+        if thin is None or thin != thin:
+            lines += ["Thinnest separable film: not determined on the locked set, because the "
+                      "pigmented scans fail to separate at every thickness and were not "
+                      "excluded. On clear validation coats it was 2.0 um.", ""]
     else:
         numbers["locked_evaluation"] = None
         lines += ["Not run. Only the test owner builds the locked set "

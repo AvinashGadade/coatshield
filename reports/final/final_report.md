@@ -1,6 +1,6 @@
 # CoatShield final report
 
-Built 2026-10-08T11:26:11+00:00 from the files in `reports/`. Every number names its source file; file names carry the hash of the configuration that produced them. Demonstration on simulated and public data, not a validated GMP system.
+Built 2026-10-08T11:40:54+00:00 from the files in `reports/`. Every number names its source file; file names carry the hash of the configuration that produced them. Demonstration on simulated and public data, not a validated GMP system.
 
 ## 1. Headline with the placeholder measurement (1 um noise)
 
@@ -66,4 +66,13 @@ Source: `app/assets/bundles/bceb510b2581` (200,000 simulated pellets for 96 mill
 
 ## 6. Locked test set
 
-Not run. Only the test owner builds the locked set (`python scripts/make_locked_testset.py --confirm`) and evaluates on it once (`python scripts/run_locked_eval.py --confirm`).
+`locked_eval_unet_2abe0b6b30a7.json`: 2000 scans the model never saw, run once by Avinash at 2026-10-08T11:34:36+00:00 on model `2abe0b6b30a7`.
+
+| Surface | All scans (px) | SNR >= 25 dB (px) |
+| --- | --- | --- |
+| Outer (air-coating) | 0.55 | 0.54 |
+| Inner (coating-core) | 4.26 | 2.48 |
+
+These figures include the pigmented scans (a fifth of the set), in which the inner surface is hidden; the locked evaluation did not split clear from pigmented coats, and it is not rerun to add that split. On the validation set the same mixed figures were 0.54 and 3.74 px (all scans); clear coats alone gave 1.06 px for the inner surface.
+
+Thinnest separable film: not determined on the locked set, because the pigmented scans fail to separate at every thickness and were not excluded. On clear validation coats it was 2.0 um.

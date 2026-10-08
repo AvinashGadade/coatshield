@@ -1,0 +1,2 @@
+{"action": "build", "who": "Avinash", "when_utc": "2026-10-08T11:29:57+00:00", "split": "locked", "n": 2000, "config_hash": "18bdb864a57e", "images_sha256": "4830a6b880c0ea2d8569057c37fcb9cd53e5ba24e85cde1339176de30339ff62", "labels_sha256": "6bbba6416aac402476272af91283473d0cbf6c56975c11e2e659b9f75d1f4278", "depth_px_um": 0.363742759011083}
+{"action": "evaluate", "who": "Avinash", "when_utc": "2026-10-08T11:34:36+00:00", "model_sha256": "2abe0b6b30a76bca08f29f1373c6fd342d8d93656b09d3cc727cae563b51b947", "n_items": 2000}

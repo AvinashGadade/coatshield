@@ -1,0 +1,14 @@
+{
+ "model": "unet",
+ "version": "0.1.0",
+ "model_sha256": "2abe0b6b30a76bca08f29f1373c6fd342d8d93656b09d3cc727cae563b51b947",
+ "n_items": 2000,
+ "outer_mae_px": 0.5455797402086847,
+ "inner_mae_px": 4.261468666524331,
+ "outer_mae_px_good_snr": 0.5413257816111601,
+ "inner_mae_px_good_snr": 2.4821174456330906,
+ "thinnest_separable_um": NaN,
+ "action": "evaluate",
+ "who": "Avinash",
+ "when_utc": "2026-10-08T11:34:36+00:00"
+}
